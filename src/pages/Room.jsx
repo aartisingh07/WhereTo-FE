@@ -1,17 +1,335 @@
-const Room = () => {
+import { useEffect, useRef, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FiSend, FiLogOut, FiHash, FiUsers, FiMessageCircle } from 'react-icons/fi';
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
+import { roomService } from '../services/roomService';
+
+// ─── Activity Selector ──────────────────────────────────────────
+const activities = [
+  { id: 'game',   emoji: '🎮', label: 'Play a Game',       desc: 'Pick and vote on browser games' },
+  { id: 'watch',  emoji: '🎬', label: 'Watch Something',   desc: 'Find movies or shows to watch' },
+  { id: 'outing', emoji: '📍', label: 'Plan an Outing',    desc: 'Find a spot everyone can go to' },
+  { id: 'study',  emoji: '📚', label: 'Study Together',    desc: 'Shared Pomodoro + to-do lists' },
+  { id: 'chat',   emoji: '💬', label: 'Just Chat',         desc: 'Hang out and talk' },
+];
+
+const ActivitySelector = ({ currentActivity, isHost, onSelect }) => (
+  <div className="flex-1 flex flex-col items-center justify-center p-6">
+    <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
+      {isHost ? 'What do you want to do?' : 'Waiting for host to pick an activity...'}
+    </p>
+    <h2 className="font-display font-bold text-2xl text-white mb-8 text-center">Choose an activity</h2>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-2xl">
+      {activities.map((act) => (
+        <button
+          key={act.id}
+          disabled={!isHost}
+          onClick={() => isHost && onSelect(act.id)}
+          className={`glass-card p-5 text-left transition-all duration-300 
+            ${isHost ? 'cursor-pointer hover:-translate-y-1 hover:border-primary-500/30 hover:shadow-glow-purple' : 'cursor-default opacity-60'}
+            ${currentActivity === act.id ? 'border-primary-500/40 shadow-glow-purple' : ''}`}
+        >
+          <div className="text-3xl mb-3">{act.emoji}</div>
+          <p className="font-display font-semibold text-white text-sm mb-1">{act.label}</p>
+          <p className="text-white/30 text-xs leading-relaxed">{act.desc}</p>
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+// ─── Activity Panels (Phase 4–6 placeholders) ──────────────────
+const ComingSoon = ({ activity }) => {
+  const act = activities.find((a) => a.id === activity);
   return (
-    <div className="min-h-screen bg-dark-900 bg-grid pt-24 pb-12 px-4">
-      <div className="max-w-4xl mx-auto text-center">
-        <div className="glass-card p-12 animate-slide-up">
-          <h1 className="font-display font-bold text-3xl text-white mb-3">
-            🏠 Hangout Room
-          </h1>
-          <p className="text-white/40 max-w-md mx-auto mb-2">
-            Real-time chat, voting, and activities with your squad.
-          </p>
-          <p className="text-primary-400 text-sm font-medium">
-            🚧 Coming in Phase 3
-          </p>
+    <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+      <div className="text-6xl mb-4">{act?.emoji}</div>
+      <h3 className="font-display font-bold text-xl text-white mb-2">{act?.label}</h3>
+      <p className="text-white/40 text-sm mb-4">This feature is coming in the next phase!</p>
+      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-300 text-sm">
+        🚧 Phase 4+ feature
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Room Page ────────────────────────────────────────────
+const Room = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { socket } = useSocket();
+
+  const [room, setRoom] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [onlineUsers, setOnlineUsers] = useState([]);
+  const [messageInput, setMessageInput] = useState('');
+  const [activity, setActivity] = useState('none');
+  const [loading, setLoading] = useState(true);
+  const [chatOpen, setChatOpen] = useState(true);
+  const [membersOpen, setMembersOpen] = useState(false);
+
+  const messagesEndRef = useRef(null);
+
+  const isHost = room?.host?._id === user?._id || room?.host === user?._id;
+
+  // Load room data
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [roomData, msgs] = await Promise.all([
+          roomService.getRoom(id),
+          roomService.getMessages(id),
+        ]);
+        setRoom(roomData);
+        setMessages(msgs);
+        setActivity(roomData.activity);
+        setLoading(false);
+      } catch {
+        toast.error('Room not found or expired');
+        navigate('/');
+      }
+    };
+    load();
+  }, [id]);
+
+  // Socket events
+  useEffect(() => {
+    if (!socket || !room) return;
+
+    socket.emit('join-room', { roomId: id });
+
+    socket.on('new-message', (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    socket.on('room-users-update', (users) => {
+      setOnlineUsers(users);
+    });
+
+    socket.on('activity-changed', ({ activity: newActivity }) => {
+      setActivity(newActivity);
+    });
+
+    return () => {
+      socket.emit('leave-room', { roomId: id });
+      socket.off('new-message');
+      socket.off('room-users-update');
+      socket.off('activity-changed');
+    };
+  }, [socket, room, id]);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  const sendMessage = () => {
+    if (!messageInput.trim() || !socket) return;
+    socket.emit('send-message', { roomId: id, content: messageInput });
+    setMessageInput('');
+  };
+
+  const handleSetActivity = async (newActivity) => {
+    try {
+      await roomService.setActivity(id, newActivity);
+      socket?.emit('set-activity', { roomId: id, activity: newActivity });
+      setActivity(newActivity);
+    } catch {
+      toast.error('Could not change activity');
+    }
+  };
+
+  const handleLeave = async () => {
+    try {
+      socket?.emit('leave-room', { roomId: id });
+      await roomService.leaveRoom(id);
+      navigate('/');
+      toast.info('Left the room');
+    } catch {
+      navigate('/');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dark-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-2 border-primary-500/30 border-t-primary-500 rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-white/40">Loading room...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const allMembers = room?.members || [];
+
+  return (
+    <div className="h-screen bg-dark-900 flex flex-col overflow-hidden pt-16">
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5 bg-dark-900/80 backdrop-blur-lg flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center">
+            <FiHash className="text-primary-400" size={16} />
+          </div>
+          <div>
+            <p className="font-display font-semibold text-white text-sm">{room?.name}</p>
+            <p className="text-white/30 text-xs">{room?.code} · {onlineUsers.length} online</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Mobile toggles */}
+          <button
+            onClick={() => setMembersOpen(!membersOpen)}
+            className={`lg:hidden w-9 h-9 rounded-xl flex items-center justify-center transition-colors
+              ${membersOpen ? 'bg-primary-500/20 text-primary-300' : 'bg-white/5 text-white/40 hover:text-white'}`}
+          >
+            <FiUsers size={16} />
+          </button>
+          <button
+            onClick={() => setChatOpen(!chatOpen)}
+            className={`lg:hidden w-9 h-9 rounded-xl flex items-center justify-center transition-colors
+              ${chatOpen ? 'bg-primary-500/20 text-primary-300' : 'bg-white/5 text-white/40 hover:text-white'}`}
+          >
+            <FiMessageCircle size={16} />
+          </button>
+
+          {/* Activity reset */}
+          {isHost && activity !== 'none' && (
+            <button
+              onClick={() => handleSetActivity('none')}
+              className="text-white/30 hover:text-white/60 text-xs px-3 py-1.5 rounded-lg hover:bg-white/5 transition-all"
+            >
+              ← Change activity
+            </button>
+          )}
+
+          <button
+            onClick={handleLeave}
+            className="flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all"
+          >
+            <FiLogOut size={15} />
+            <span className="hidden sm:inline">Leave</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main layout */}
+      <div className="flex-1 flex overflow-hidden">
+
+        {/* Members sidebar */}
+        <div className={`${membersOpen || 'hidden'} lg:flex flex-col w-52 border-r border-white/5 bg-dark-900/50 flex-shrink-0`}>
+          <div className="p-4 border-b border-white/5">
+            <p className="text-white/30 text-xs uppercase tracking-widest font-semibold">
+              Members · {allMembers.length}
+            </p>
+          </div>
+          <div className="flex-1 overflow-y-auto p-3 space-y-1">
+            {allMembers.map((member) => {
+              const memberId = member._id || member;
+              const memberUsername = member.username || memberId;
+              const isOnline = onlineUsers.some((u) => u.userId === memberId);
+              const isRoomHost = memberId === (room?.host?._id || room?.host);
+              return (
+                <div key={memberId} className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/3">
+                  <div className="relative flex-shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-xs font-bold text-white">
+                      {memberUsername[0]?.toUpperCase()}
+                    </div>
+                    <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-dark-900 ${isOnline ? 'bg-neon-green' : 'bg-white/20'}`} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-xs font-medium truncate">{memberUsername}</p>
+                    {isRoomHost && <p className="text-primary-400 text-[10px]">Host</p>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Main content area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {activity === 'none'
+            ? <ActivitySelector currentActivity={activity} isHost={isHost} onSelect={handleSetActivity} />
+            : <ComingSoon activity={activity} />
+          }
+        </div>
+
+        {/* Chat panel */}
+        <div className={`${chatOpen ? 'flex' : 'hidden'} lg:flex flex-col w-72 border-l border-white/5 bg-dark-900/50 flex-shrink-0`}>
+          {/* Chat header */}
+          <div className="p-4 border-b border-white/5 flex-shrink-0">
+            <p className="text-white/30 text-xs uppercase tracking-widest font-semibold flex items-center gap-1.5">
+              <FiMessageCircle size={12} /> Chat
+            </p>
+          </div>
+
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-3 space-y-2">
+            {messages.length === 0 && (
+              <p className="text-white/20 text-xs text-center py-6">No messages yet. Say hi! 👋</p>
+            )}
+            {messages.map((msg, i) => {
+              const isMe = msg.sender?.toString() === user?._id?.toString();
+              const isSystem = msg.type === 'system';
+
+              if (isSystem) {
+                return (
+                  <p key={i} className="text-white/25 text-xs text-center py-1 italic">
+                    {msg.content}
+                  </p>
+                );
+              }
+
+              return (
+                <div key={i} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                  {!isMe && (
+                    <p className="text-white/30 text-[10px] mb-1 px-1">{msg.senderName}</p>
+                  )}
+                  <div className={`max-w-[85%] px-3 py-2 rounded-2xl text-sm break-words
+                    ${isMe
+                      ? 'bg-primary-500/20 text-white rounded-tr-sm border border-primary-500/20'
+                      : 'bg-white/5 text-white/80 rounded-tl-sm border border-white/5'
+                    }`}>
+                    {msg.content}
+                  </div>
+                  <p className="text-white/20 text-[10px] mt-0.5 px-1">
+                    {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* Input */}
+          <div className="p-3 border-t border-white/5 flex-shrink-0">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Type a message..."
+                value={messageInput}
+                onChange={(e) => setMessageInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                maxLength={500}
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-white text-sm
+                           placeholder-white/20 focus:outline-none focus:border-primary-500/40 focus:bg-white/8
+                           transition-all"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={!messageInput.trim()}
+                className="w-9 h-9 rounded-xl bg-primary-500/20 border border-primary-500/20 flex items-center justify-center
+                           text-primary-400 hover:bg-primary-500/30 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <FiSend size={15} />
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

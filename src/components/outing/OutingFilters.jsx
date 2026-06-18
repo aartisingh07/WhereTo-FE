@@ -16,6 +16,12 @@ const OutingFilters = ({ socket, roomId, isHost, submissions = [], onFindPlaces 
   const [mood, setMood] = useState('chill');
   const [distance, setDistance] = useState(5000);
   const [submitted, setSubmitted] = useState(false);
+  const [subFilters, setSubFilters] = useState({
+    diet: 'any',
+    foodType: 'any',
+    budget: 'any',
+    adventureType: 'any'
+  });
 
   // Automatically fetch location on mount
   useEffect(() => {
@@ -35,6 +41,7 @@ const OutingFilters = ({ socket, roomId, isHost, submissions = [], onFindPlaces 
         lng: location.lng,
         mood,
         distance,
+        subFilters,
       },
     });
 
@@ -98,7 +105,7 @@ const OutingFilters = ({ socket, roomId, isHost, submissions = [], onFindPlaces 
                   key={m.id}
                   disabled={submitted}
                   onClick={() => setMood(m.id)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 cursor-pointer
                     ${mood === m.id
                       ? 'bg-primary-500/25 border-primary-500 text-primary-300'
                       : 'bg-white/3 border-white/5 text-white/50 hover:bg-white/8'
@@ -109,6 +116,88 @@ const OutingFilters = ({ socket, roomId, isHost, submissions = [], onFindPlaces 
               ))}
             </div>
           </div>
+
+          {/* Sub-Filters Panel (shown when Foodie or Adventure is selected) */}
+          {!submitted && mood === 'foodie' && (
+            <div className="bg-white/3 p-4 rounded-xl border border-white/5 space-y-4 animate-slide-up">
+              <p className="text-[10px] uppercase font-bold text-white/40 tracking-wider">Customize Foodie Vibe</p>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {/* Diet */}
+                <div>
+                  <label className="block text-white/30 text-[10px] mb-1 font-semibold">Diet Preference</label>
+                  <select
+                    value={subFilters.diet}
+                    onChange={(e) => setSubFilters(prev => ({ ...prev, diet: e.target.value }))}
+                    className="w-full bg-dark-900 border border-white/10 text-white/80 rounded-lg p-1.5 text-xs focus:outline-none focus:border-primary-500 cursor-pointer"
+                  >
+                    <option value="any">🍔 Any Food</option>
+                    <option value="veg">🥗 Veg Only</option>
+                  </select>
+                </div>
+
+                {/* Food Type */}
+                <div>
+                  <label className="block text-white/30 text-[10px] mb-1 font-semibold">Food Category</label>
+                  <select
+                    value={subFilters.foodType}
+                    onChange={(e) => setSubFilters(prev => ({ ...prev, foodType: e.target.value }))}
+                    className="w-full bg-dark-900 border border-white/10 text-white/80 rounded-lg p-1.5 text-xs focus:outline-none focus:border-primary-500 cursor-pointer"
+                  >
+                    <option value="any">🍽️ All Options</option>
+                    <option value="junk_food">🍟 Junk Food</option>
+                    <option value="cuisine">🍷 Fine Dining</option>
+                    <option value="food_cart">🚚 Street Carts / Trucks</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Budget selector */}
+              <div>
+                <label className="block text-white/30 text-[10px] mb-1.5 font-semibold">Budget Category</label>
+                <div className="flex gap-2">
+                  {[
+                    { id: 'any', label: 'All' },
+                    { id: 'cheap', label: '$ (Cheap)' },
+                    { id: 'moderate', label: '$$ (Mod)' },
+                    { id: 'expensive', label: '$$$ (Prem)' }
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setSubFilters(prev => ({ ...prev, budget: opt.id }))}
+                      className={`flex-1 py-1 rounded-lg text-[10px] font-semibold border transition-all cursor-pointer
+                        ${subFilters.budget === opt.id
+                          ? 'bg-primary-500/25 border-primary-500 text-primary-300'
+                          : 'bg-white/3 border-white/5 text-white/50 hover:bg-white/8'}`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!submitted && mood === 'adventure' && (
+            <div className="bg-white/3 p-4 rounded-xl border border-white/5 space-y-3 animate-slide-up">
+              <p className="text-[10px] uppercase font-bold text-white/40 tracking-wider">Customize Adventure Vibe</p>
+              <div>
+                <label className="block text-white/30 text-[10px] mb-1.5 font-semibold">Adventure Category</label>
+                <select
+                  value={subFilters.adventureType}
+                  onChange={(e) => setSubFilters(prev => ({ ...prev, adventureType: e.target.value }))}
+                  className="w-full bg-dark-900 border border-white/10 text-white/80 rounded-lg p-2 text-xs focus:outline-none focus:border-primary-500 cursor-pointer"
+                >
+                  <option value="any">🧗 Any Adventure</option>
+                  <option value="nature">🌳 Nature & Forests</option>
+                  <option value="beach">🌊 Beaches & Water bodies</option>
+                  <option value="mountains">🏔️ Mountain Peaks</option>
+                  <option value="sports">⚽ Sports Centers</option>
+                </select>
+              </div>
+            </div>
+          )}
 
           {/* Distance Slider */}
           <div>

@@ -51,19 +51,29 @@ const PlaceSkeleton = () => (
 
 // ─── Main Explore Page ───────────────────────────────────────────
 const Explore = () => {
-  const [step, setStep] = useState(1);        // 1=mood 2=distance 3=results
+  const [step, setStep] = useState(1);        // 1=mood 1.5=customizer 2=distance 3=results
   const [mood, setMood] = useState(null);
   const [distance, setDistance] = useState(null);
   const [places, setPlaces] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [subFilters, setSubFilters] = useState({
+    diet: 'any',
+    foodType: 'any',
+    budget: 'any',
+    adventureType: 'any'
+  });
 
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
 
   // ── Step 1: Mood selected ──
   const handleMoodSelect = (moodId) => {
     setMood(moodId);
-    setStep(2);
+    if (moodId === 'foodie' || moodId === 'adventure') {
+      setStep(1.5);
+    } else {
+      setStep(2);
+    }
   };
 
   // ── Step 2: Distance selected → get location → fetch ──
@@ -87,6 +97,7 @@ const Explore = () => {
         lng,
         mood,
         distance,
+        subFilters,
       });
       setPlaces(data.places);
       if (data.places.length === 0) {
@@ -133,6 +144,12 @@ const Explore = () => {
     setStep(1);
     setMood(null);
     setDistance(null);
+    setSubFilters({
+      diet: 'any',
+      foodType: 'any',
+      budget: 'any',
+      adventureType: 'any'
+    });
     setPlaces([]);
     setError(null);
     setLoading(false);
@@ -202,6 +219,145 @@ const Explore = () => {
           </div>
         )}
 
+        {/* ── STEP 1.5: Vibe Customizer (Sub-filters) ── */}
+        {step === 1.5 && (
+          <div className="animate-slide-up max-w-lg mx-auto glass-card p-6 border-white/5 space-y-6">
+            <div className="text-center">
+              <span className="text-3xl mb-2 block">{selectedMood?.emoji}</span>
+              <h3 className="font-display font-bold text-xl text-white">Customize Your {selectedMood?.label} Vibe</h3>
+              <p className="text-white/40 text-xs mt-1">Refine your suggestions below</p>
+            </div>
+
+            {mood === 'foodie' && (
+              <div className="space-y-4">
+                {/* Diet Selector */}
+                <div>
+                  <label className="block text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">
+                    Diet Preference
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'any', label: '🍔 Any Food' },
+                      { id: 'veg', label: '🥗 Veg Only' }
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setSubFilters(prev => ({ ...prev, diet: opt.id }))}
+                        className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all cursor-pointer
+                          ${subFilters.diet === opt.id
+                            ? 'bg-primary-500/25 border-primary-500 text-primary-300'
+                            : 'bg-white/3 border-white/5 text-white/50 hover:bg-white/8'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Food Type Selector */}
+                <div>
+                  <label className="block text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">
+                    Food Category
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'any', label: '🍽️ All Options' },
+                      { id: 'junk_food', label: '🍟 Junk Food' },
+                      { id: 'cuisine', label: '🍷 Fine Dining' },
+                      { id: 'food_cart', label: '🚚 Street Carts / Trucks' }
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setSubFilters(prev => ({ ...prev, foodType: opt.id }))}
+                        className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all cursor-pointer
+                          ${subFilters.foodType === opt.id
+                            ? 'bg-primary-500/25 border-primary-500 text-primary-300'
+                            : 'bg-white/3 border-white/5 text-white/50 hover:bg-white/8'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Budget Selector */}
+                <div>
+                  <label className="block text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">
+                    Budget
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { id: 'any', label: 'All' },
+                      { id: 'cheap', label: '$' },
+                      { id: 'moderate', label: '$$' },
+                      { id: 'expensive', label: '$$$' }
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setSubFilters(prev => ({ ...prev, budget: opt.id }))}
+                        className={`py-2 px-1 rounded-xl text-xs font-semibold border transition-all cursor-pointer
+                          ${subFilters.budget === opt.id
+                            ? 'bg-primary-500/25 border-primary-500 text-primary-300'
+                            : 'bg-white/3 border-white/5 text-white/50 hover:bg-white/8'}`}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {mood === 'adventure' && (
+              <div className="space-y-4">
+                {/* Adventure Type */}
+                <div>
+                  <label className="block text-white/50 text-xs font-semibold uppercase tracking-wider mb-2">
+                    Adventure Type
+                  </label>
+                  <div className="grid grid-cols-1 gap-2">
+                    {[
+                      { id: 'any', label: '🧗 Any Adventure' },
+                      { id: 'nature', label: '🌳 Nature & Forest Trails' },
+                      { id: 'beach', label: '🌊 Beaches & Lakes' },
+                      { id: 'mountains', label: '🏔️ Mountain Peaks' },
+                      { id: 'sports', label: '⚽ Sports Centers' }
+                    ].map(opt => (
+                      <button
+                        key={opt.id}
+                        onClick={() => setSubFilters(prev => ({ ...prev, adventureType: opt.id }))}
+                        className={`py-2.5 px-4 rounded-xl text-xs font-semibold border transition-all text-left flex justify-between items-center cursor-pointer
+                          ${subFilters.adventureType === opt.id
+                            ? 'bg-primary-500/25 border-primary-500 text-primary-300 font-bold'
+                            : 'bg-white/3 border-white/5 text-white/50 hover:bg-white/8'}`}
+                      >
+                        <span>{opt.label}</span>
+                        {subFilters.adventureType === opt.id && <span className="text-primary-400 font-bold">✓</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Step Navigation Buttons */}
+            <div className="flex gap-3 pt-4 border-t border-white/5">
+              <button
+                onClick={() => setStep(1)}
+                className="flex-1 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all cursor-pointer"
+              >
+                ← Back
+              </button>
+              <button
+                onClick={() => setStep(2)}
+                className="flex-1 btn-primary py-2.5 rounded-xl text-xs font-bold shadow-glow-purple-sm cursor-pointer"
+              >
+                Choose Distance →
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* ── STEP 2: Distance Selector ── */}
         {step === 2 && (
           <div className="animate-slide-up">
@@ -227,8 +383,14 @@ const Explore = () => {
               ))}
             </div>
             <div className="text-center mt-6">
-              <button onClick={() => setStep(1)} className="text-white/30 hover:text-white/60 text-sm transition-colors">
-                ← Change mood
+              <button onClick={() => {
+                if (mood === 'foodie' || mood === 'adventure') {
+                  setStep(1.5);
+                } else {
+                  setStep(1);
+                }
+              }} className="text-white/30 hover:text-white/60 text-sm transition-colors cursor-pointer">
+                ← Change mood / filters
               </button>
             </div>
           </div>

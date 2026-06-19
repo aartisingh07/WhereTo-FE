@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { FiMapPin, FiNavigation, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import useGeolocation from '../hooks/useGeolocation';
@@ -89,8 +89,17 @@ const Explore = () => {
     }
   };
 
+  // Automatically fetch places when Step 3 is reached and location is acquired
+  useEffect(() => {
+    if (step === 3 && location.lat && location.lng && distance) {
+      fetchPlaces(location.lat, location.lng);
+    }
+  }, [step, location.lat, location.lng, distance, mood, subFilters]);
+
   // Watch for location being fetched then call API
   const fetchPlaces = async (lat, lng) => {
+    setLoading(true);
+    setError(null);
     try {
       const data = await placeService.getNearbyPlaces({
         lat,
@@ -368,10 +377,7 @@ const Explore = () => {
               {distances.map((d) => (
                 <button
                   key={d.id}
-                  onClick={() => {
-                    setDistance(d.id);
-                    setStep(3);
-                  }}
+                  onClick={() => handleDistanceSelect(d.id)}
                   className="glass-card-hover p-6 text-center group cursor-pointer"
                 >
                   <div className="text-3xl mb-3 group-hover:scale-110 transition-transform duration-200">

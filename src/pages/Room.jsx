@@ -20,20 +20,18 @@ const activities = [
   { id: 'chat',   emoji: '💬', label: 'Just Chat',         desc: 'Hang out and talk' },
 ];
 
-const ActivitySelector = ({ currentActivity, isHost, onSelect }) => (
+const ActivitySelector = ({ currentActivity, onSelect }) => (
   <div className="flex-1 flex flex-col items-center justify-center p-6">
-    <p className="text-white/30 text-xs uppercase tracking-widest mb-2">
-      {isHost ? 'What do you want to do?' : 'Waiting for host to pick an activity...'}
+    <p className="text-white/30 text-xs uppercase tracking-widest mb-2 font-semibold">
+      Propose an activity to the group
     </p>
     <h2 className="font-display font-bold text-2xl text-white mb-8 text-center">Choose an activity</h2>
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-2xl">
       {activities.map((act) => (
         <button
           key={act.id}
-          disabled={!isHost}
-          onClick={() => isHost && onSelect(act.id)}
-          className={`glass-card p-5 text-left transition-all duration-300 
-            ${isHost ? 'cursor-pointer hover:-translate-y-1 hover:border-primary-500/30 hover:shadow-glow-purple' : 'cursor-default opacity-60'}
+          onClick={() => onSelect(act.id)}
+          className={`glass-card p-5 text-left transition-all duration-300 cursor-pointer hover:-translate-y-1 hover:border-primary-500/30 hover:shadow-glow-purple
             ${currentActivity === act.id ? 'border-primary-500/40 shadow-glow-purple' : ''}`}
         >
           <div className="text-3xl mb-3">{act.emoji}</div>
@@ -141,11 +139,21 @@ const Room = () => {
       }
     });
 
-    socket.on('vote-result', (result) => {
+    socket.on('vote-result', async (result) => {
       setActiveVote(null);
       setVoteResult(result);
       if (result.result === 'approved') {
         toast.success(`🎉 Passed: ${result.item.name || result.item.title}`);
+        if (result.item?.type === 'activity' && isHost) {
+          try {
+            await roomService.setActivity(id, result.item.id);
+            socket.emit('set-activity', { roomId: id, activity: result.item.id });
+          } catch (err) {
+            const errorMsg = err.response?.data?.message || err.message || 'Failed to set proposed activity';
+            toast.error(`Failed to set proposed activity: ${errorMsg}`);
+            console.error('API Error in vote-result transition:', err);
+          }
+        }
       } else {
         toast.error(`❌ Rejected: ${result.item.name || result.item.title}`);
       }
@@ -176,6 +184,22 @@ const Room = () => {
   const handlePropose = (item) => {
     if (!socket) return;
     socket.emit('start-vote', { roomId: id, item });
+  };
+
+  const handleProposeActivity = (activityId) => {
+    if (!socket) return;
+    const act = activities.find((a) => a.id === activityId);
+    if (!act) return;
+    socket.emit('start-vote', {
+      roomId: id,
+      item: {
+        type: 'activity',
+        id: activityId,
+        name: act.label,
+        emoji: act.emoji,
+        desc: act.desc,
+      },
+    });
   };
 
   const handleVote = (vote) => {
@@ -314,7 +338,20 @@ const Room = () => {
 
         <div className="flex-1 flex flex-col min-w-0">
           {activity === 'none' && (
-            <ActivitySelector currentActivity={activity} isHost={isHost} onSelect={handleSetActivity} />
+            (activeVote || voteResult) ? (
+              <GameVoting
+                activeVote={activeVote}
+                tallies={voteTallies}
+                userVote={myVote}
+                onVote={handleVote}
+                isHost={isHost}
+                onEnd={handleEndVote}
+                voteResult={voteResult}
+                onClear={handleClearVoteResult}
+              />
+            ) : (
+              <ActivitySelector currentActivity={activity} onSelect={handleProposeActivity} />
+            )
           )}
           {activity === 'game' && (
             (activeVote || voteResult) ? (

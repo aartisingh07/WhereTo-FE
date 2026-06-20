@@ -78,10 +78,14 @@ const GameVoting = ({
               Proposal Passed!
             </p>
             <h2 className="font-display font-black text-3xl text-white mb-4">
-              {item.type === 'movie' ? `Watch ${item.name || item.title}?` : `Let's Play ${item.name || item.title}!`}
+              {item.type === 'activity' ? `Switch to ${item.name}?` : item.type === 'outing' ? `Let's meet at ${item.name || item.title}!` : item.type === 'movie' ? `Watch ${item.name || item.title}?` : `Let's Play ${item.name || item.title}!`}
             </h2>
             <p className="text-white/50 text-sm mb-6">
-              {item.type === 'movie'
+              {item.type === 'activity'
+                ? 'The group voted YES! Changing room activity...'
+                : item.type === 'outing'
+                ? 'The group voted YES! Get directions on Google Maps below.'
+                : item.type === 'movie'
                 ? 'The group voted YES! Streaming source info is below.'
                 : 'The group voted YES! Click the button below to join the game session.'}
             </p>
@@ -148,32 +152,44 @@ const GameVoting = ({
             </div>
 
             <div className="flex flex-col gap-3">
-              {item.type !== 'movie' ? (
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full btn-primary flex items-center justify-center gap-2 py-3 rounded-xl font-semibold bg-gradient-to-r from-neon-green to-emerald-500 hover:from-neon-green hover:to-emerald-600 hover:shadow-glow-green text-white transition-all"
-                >
-                  Open Game
-                  <FiExternalLink size={16} />
-                </a>
-              ) : (
-                <a
-                  href={item.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full btn-primary flex items-center justify-center gap-2 py-3 rounded-xl font-semibold bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 hover:shadow-glow-purple text-white transition-all"
-                >
-                  View Details on TMDB
-                  <FiExternalLink size={16} />
-                </a>
+              {item.type !== 'activity' && (
+                item.type === 'outing' ? (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full btn-primary flex items-center justify-center gap-2 py-3 rounded-xl font-semibold bg-gradient-to-r from-neon-green to-emerald-500 hover:from-neon-green hover:to-emerald-600 hover:shadow-glow-green text-white transition-all"
+                  >
+                    Open Google Maps
+                    <FiExternalLink size={16} />
+                  </a>
+                ) : item.type === 'movie' ? (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full btn-primary flex items-center justify-center gap-2 py-3 rounded-xl font-semibold bg-gradient-to-r from-primary-500 to-accent-500 hover:from-primary-600 hover:to-accent-600 hover:shadow-glow-purple text-white transition-all"
+                  >
+                    View Details on TMDB
+                    <FiExternalLink size={16} />
+                  </a>
+                ) : (
+                  <a
+                    href={item.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full btn-primary flex items-center justify-center gap-2 py-3 rounded-xl font-semibold bg-gradient-to-r from-neon-green to-emerald-500 hover:from-neon-green hover:to-emerald-600 hover:shadow-glow-green text-white transition-all"
+                  >
+                    Open Game
+                    <FiExternalLink size={16} />
+                  </a>
+                )
               )}
               <button
                 onClick={onClear}
                 className="w-full btn-secondary text-xs"
               >
-                {item.type === 'movie' ? 'Back to Watch Lounge' : 'Back to Game Lounge'}
+                {item.type === 'activity' ? 'Back to Room' : item.type === 'outing' ? 'Back to Outing Lounge' : item.type === 'movie' ? 'Back to Watch Lounge' : 'Back to Game Lounge'}
               </button>
             </div>
           </div>
@@ -215,7 +231,7 @@ const GameVoting = ({
               className="w-full btn-primary py-3 rounded-xl font-semibold bg-white/5 border border-white/10 hover:bg-white/10 text-white transition-all flex items-center justify-center gap-1.5"
             >
               <FiArrowLeft size={16} />
-              {item.type === 'movie' ? 'Try Another Movie' : 'Try Another Game'}
+              {item.type === 'activity' ? 'Try Another Activity' : item.type === 'outing' ? 'Try Another Place' : item.type === 'movie' ? 'Try Another Movie' : 'Try Another Game'}
             </button>
           </div>
         )}
@@ -243,10 +259,10 @@ const GameVoting = ({
         </div>
 
         <p className="text-primary-400 text-xs font-bold uppercase tracking-widest mb-1">
-          Group Vote Proposed
+          {item?.type === 'activity' ? 'Activity Proposal' : item?.type === 'outing' ? 'Outing Proposal' : 'Group Vote Proposed'}
         </p>
         <h2 className="font-display font-black text-2xl text-white mb-2 truncate">
-          Play {item?.name}?
+          {item?.type === 'activity' ? `Switch to ${item?.name}?` : item?.type === 'outing' ? `Meet at ${item?.name}?` : item?.type === 'movie' ? `Watch ${item?.title}?` : `Play ${item?.name}?`}
         </h2>
         <p className="text-white/50 text-xs mb-8 leading-relaxed">
           {item?.desc}

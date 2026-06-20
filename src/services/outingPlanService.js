@@ -10,4 +10,9 @@ export const outingPlanService = {
     const response = await api.get('/outing-plans/my-plans');
     return response.data;
   },
+
+  getPlanForRoom: async (roomId) => {
+    const response = await api.get(`/outing-plans/room/${roomId}`);
+    return response.data;
+  },
 };

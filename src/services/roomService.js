@@ -30,4 +30,9 @@ export const roomService = {
     const response = await api.post(`/rooms/${id}/leave`);
     return response.data;
   },
+
+  deleteRoom: async (id) => {
+    const response = await api.delete(`/rooms/${id}`);
+    return response.data;
+  },
 };

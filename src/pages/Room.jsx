@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiSend, FiLogOut, FiHash, FiUsers, FiMessageCircle } from 'react-icons/fi';
+import { FiSend, FiLogOut, FiHash, FiUsers, FiMessageCircle, FiExternalLink, FiClock } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { roomService } from '../services/roomService';
+import { outingPlanService } from '../services/outingPlanService';
 import GameList from '../components/games/GameList';
 import GameVoting from '../components/games/GameVoting';
 import WatchLounge from '../components/movies/WatchLounge';
@@ -80,9 +81,59 @@ const Room = () => {
   const [voteTallies, setVoteTallies] = useState({ yes: 0, no: 0, maybe: 0 });
   const [voteResult, setVoteResult] = useState(null);
 
+  // Outing Plan State
+  const [scheduledPlan, setScheduledPlan] = useState(null);
+
   const messagesEndRef = useRef(null);
 
   const isHost = room?.host?._id === user?._id || room?.host === user?._id;
+
+  const fetchRoomPlan = async () => {
+    if (!id) return;
+    try {
+      const plan = await outingPlanService.getPlanForRoom(id);
+      setScheduledPlan(plan);
+    } catch (err) {
+      console.error('Failed to fetch room plan:', err);
+    }
+  };
+
+  const handlePlanScheduled = async () => {
+    await fetchRoomPlan();
+    socket?.emit('plan-scheduled', { roomId: id });
+  };
+
+  useEffect(() => {
+    fetchRoomPlan();
+  }, [id]);
+
+  const getCountdownString = (dateTimeString) => {
+    const diff = new Date(dateTimeString) - new Date();
+    if (diff <= 0) return 'Happening now!';
+    
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+
+    if (days > 0) {
+      return `${days}d ${hours % 24}h remaining`;
+    } else if (hours > 0) {
+      return `${hours}h ${minutes % 60}m remaining`;
+    } else {
+      return `${minutes}m remaining`;
+    }
+  };
+
+  const handleDeleteRoom = async () => {
+    if (!window.confirm("Are you sure you want to delete this room? This will kick everyone out and deactivate the room.")) return;
+    try {
+      await roomService.deleteRoom(id);
+      toast.success("Room deleted successfully");
+      navigate('/');
+    } catch (err) {
+      toast.error("Failed to delete room");
+    }
+  };
 
   // Load room data
   useEffect(() => {
@@ -159,6 +210,10 @@ const Room = () => {
       }
     });
 
+    socket.on('outing-plan-scheduled', () => {
+      fetchRoomPlan();
+    });
+
     return () => {
       socket.emit('leave-room', { roomId: id });
       socket.off('new-message');
@@ -167,8 +222,9 @@ const Room = () => {
       socket.off('vote-started');
       socket.off('vote-update');
       socket.off('vote-result');
+      socket.off('outing-plan-scheduled');
     };
-  }, [socket, room, id, user?._id]);
+  }, [socket, room, id, user?._id, fetchRoomPlan]);
 
   // Auto-scroll chat
   useEffect(() => {
@@ -292,6 +348,15 @@ const Room = () => {
             </button>
           )}
 
+          {isHost && (
+            <button
+              onClick={handleDeleteRoom}
+              className="flex items-center gap-1.5 text-red-500 hover:text-red-400 text-sm px-3 py-1.5 rounded-lg hover:bg-red-500/10 border border-red-500/20 transition-all"
+            >
+              <span className="hidden sm:inline">Delete Room</span>
+            </button>
+          )}
+
           <button
             onClick={handleLeave}
             className="flex items-center gap-1.5 text-red-400 hover:text-red-300 text-sm px-3 py-1.5 rounded-lg hover:bg-red-500/10 transition-all"
@@ -337,6 +402,40 @@ const Room = () => {
         </div>
 
         <div className="flex-1 flex flex-col min-w-0">
+          {scheduledPlan && (
+            <div className="bg-neon-green/10 border-b border-neon-green/20 px-6 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 animate-slide-up">
+              <div className="flex items-center gap-3">
+                <span className="text-xl">📅</span>
+                <div className="text-left">
+                  <p className="text-xs text-neon-green font-bold uppercase tracking-wider">Upcoming Outing Scheduled!</p>
+                  <h4 className="text-sm font-bold text-white mt-0.5">
+                    {scheduledPlan.placeName} &middot; <span className="font-mono text-xs text-white/70">{new Date(scheduledPlan.dateTime).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</span>
+                  </h4>
+                  {scheduledPlan.address && (
+                    <p className="text-[11px] text-white/40 truncate max-w-lg mt-0.5">📍 {scheduledPlan.address}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex items-center gap-3 flex-shrink-0">
+                <span className="text-xs font-mono text-white/50 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1">
+                  <FiClock size={11} className="text-neon-green animate-pulse" />
+                  {getCountdownString(scheduledPlan.dateTime)}
+                </span>
+                {scheduledPlan.mapsLink && (
+                  <a
+                    href={scheduledPlan.mapsLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-neon-green hover:underline flex items-center gap-1 font-semibold"
+                  >
+                    Directions
+                    <FiExternalLink size={12} />
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
           {activity === 'none' && (
             (activeVote || voteResult) ? (
               <GameVoting
@@ -348,6 +447,7 @@ const Room = () => {
                 onEnd={handleEndVote}
                 voteResult={voteResult}
                 onClear={handleClearVoteResult}
+                onPlanScheduled={handlePlanScheduled}
               />
             ) : (
               <ActivitySelector currentActivity={activity} onSelect={handleProposeActivity} />
@@ -364,6 +464,7 @@ const Room = () => {
                 onEnd={handleEndVote}
                 voteResult={voteResult}
                 onClear={handleClearVoteResult}
+                onPlanScheduled={handlePlanScheduled}
               />
             ) : (
               <GameList onPropose={handlePropose} />
@@ -380,6 +481,7 @@ const Room = () => {
                 onEnd={handleEndVote}
                 voteResult={voteResult}
                 onClear={handleClearVoteResult}
+                onPlanScheduled={handlePlanScheduled}
               />
             ) : (
               <WatchLounge onPropose={handlePropose} />
@@ -400,6 +502,7 @@ const Room = () => {
                 voteResult={voteResult}
                 onClear={handleClearVoteResult}
                 roomId={id}
+                onPlanScheduled={handlePlanScheduled}
               />
             ) : (
               <OutingLounge

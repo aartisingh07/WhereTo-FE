@@ -14,6 +14,7 @@ const GameVoting = ({
   voteResult = null,
   onClear,
   roomId = null,
+  onPlanScheduled = null,
 }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [providers, setProviders] = useState([]);
@@ -43,6 +44,7 @@ const GameVoting = ({
       setIsScheduled(true);
       setScheduledTime(plan.dateTime);
       toast.success('Hangout plan locked and scheduled! 📅');
+      if (onPlanScheduled) onPlanScheduled(plan);
     } catch (err) {
       console.error('Failed to schedule plan:', err);
       toast.error(err.response?.data?.message || 'Could not schedule hangout plan');

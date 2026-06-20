@@ -11,6 +11,7 @@ import GameVoting from '../components/games/GameVoting';
 import WatchLounge from '../components/movies/WatchLounge';
 import StudyLounge from '../components/study/StudyLounge';
 import OutingLounge from '../components/outing/OutingLounge';
+import ChatLounge from '../components/chat/ChatLounge';
 
 // ─── Activity Selector ──────────────────────────────────────────
 const activities = [
@@ -488,7 +489,15 @@ const Room = () => {
             )
           )}
           {activity === 'study' && (
-            <StudyLounge socket={socket} roomId={id} />
+            <StudyLounge socket={socket} roomId={id} isHost={isHost} />
+          )}
+          {activity === 'chat' && (
+            <ChatLounge
+              socket={socket}
+              roomId={id}
+              isHost={isHost}
+              onlineUsers={onlineUsers}
+            />
           )}
           {activity === 'outing' && (
             (activeVote || voteResult) ? (
@@ -513,7 +522,7 @@ const Room = () => {
               />
             )
           )}
-          {activity !== 'none' && activity !== 'game' && activity !== 'watch' && activity !== 'study' && activity !== 'outing' && (
+          {activity !== 'none' && activity !== 'game' && activity !== 'watch' && activity !== 'study' && activity !== 'outing' && activity !== 'chat' && (
             <ComingSoon activity={activity} />
           )}
         </div>

@@ -314,7 +314,6 @@ const GameVoting = ({
   }
 
   // 2. --- Active Voting State ---
-  const item = activeVote?.item;
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 max-w-md mx-auto w-full animate-slide-up">

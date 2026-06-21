@@ -497,7 +497,7 @@ const Explore = () => {
                 <label className="block text-white/50 text-xs font-bold uppercase tracking-wider mb-2 pl-1">
                   Area or City Name
                 </label>
-                <div className="relative">
+                <div className="relative z-30">
                   <input
                     type="text"
                     placeholder="e.g. Dadar, Mumbai or Gujarat"
@@ -608,7 +608,7 @@ const Explore = () => {
         {step === 3 && (
           <div className="animate-fade-in">
             {/* Summary bar */}
-            <div className="glass-card p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6 animate-slide-up">
+            <div className="glass-card relative z-30 p-4 flex flex-col md:flex-row items-center justify-between gap-4 mb-6 animate-slide-up">
               <div className="flex flex-wrap items-center gap-3 text-base text-white/60">
                 <span>{selectedMood?.emoji} <span className="text-white font-medium">{selectedMood?.label}</span></span>
                 {locationMode === 'current' && selectedDist && (

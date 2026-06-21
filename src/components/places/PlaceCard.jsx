@@ -123,7 +123,7 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
         <div className="p-4 flex-1 flex flex-col justify-between">
           <div>
             <div className="flex justify-between items-start gap-2 mb-1">
-              <h3 className="font-display font-semibold text-white text-sm leading-tight line-clamp-1">
+              <h3 className="font-display font-bold text-white text-base leading-tight line-clamp-1">
                 {place.name}
               </h3>
 
@@ -141,12 +141,12 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
               </button>
             </div>
 
-            <p className="text-white/30 text-[10px] truncate mb-3">
+            <p className="text-white/40 text-xs truncate mb-3">
               {place.distance} km away · {place.budget ? `${budgetLabels[place.budget]} · ` : ''}{place.address || 'No address details'}
             </p>
 
             {travelTimes && (
-              <div className="inline-flex items-center gap-1 text-[10px] bg-primary-500/10 border border-primary-500/25 text-primary-300 px-2 py-1 rounded-lg font-medium mb-3">
+              <div className="inline-flex items-center gap-1 text-xs bg-primary-500/10 border border-primary-500/25 text-primary-300 px-2 py-1 rounded-lg font-medium mb-3">
                 <FiClock size={10} />
                 <span>Fastest: {recommendedLabel[travelTimes.recommended]} ({travelTimes.recommendedTime}m)</span>
               </div>
@@ -158,7 +158,7 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
               e.stopPropagation();
               setDetailOpen(true);
             }}
-            className="w-full py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 text-xs font-semibold transition-all duration-200"
+            className="w-full py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 text-sm font-semibold transition-all duration-200"
           >
             Show Details & Photo
           </button>
@@ -186,10 +186,10 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-dark-900 to-transparent" />
               <div className="absolute bottom-4 left-4">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/15 ${style.badge}`}>
+                <span className={`text-xs font-bold px-2 py-0.5 rounded-full border border-white/15 ${style.badge}`}>
                   {style.emoji} {place.category}
                 </span>
-                <h2 className="font-display font-black text-xl text-white mt-1.5 drop-shadow-md">
+                <h2 className="font-display font-black text-2xl text-white mt-1.5 drop-shadow-md">
                   {place.name}
                 </h2>
               </div>
@@ -198,21 +198,21 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
             {/* Content Details */}
             <div className="p-6 space-y-5">
               {/* Blurb Description */}
-              <p className="text-white/70 text-xs leading-relaxed">
+              <p className="text-white/70 text-sm leading-relaxed">
                 {place.description || defaultDesc}
               </p>
 
               {/* Address details */}
-              <div className="flex items-start gap-2 text-white/40 text-xs">
+              <div className="flex items-start gap-2 text-white/40 text-sm">
                 <FiMapPin className="text-primary-400 mt-0.5 flex-shrink-0" size={13} />
                 <div>
                   <p className="font-medium text-white/70">{place.distance} km away</p>
-                  <p className="text-[10px] text-white/30 leading-snug mt-0.5">{place.address || 'Address details not loaded'}</p>
+                  <p className="text-xs text-white/30 leading-snug mt-0.5">{place.address || 'Address details not loaded'}</p>
                 </div>
               </div>
 
               {place.budget && (
-                <div className="flex items-center gap-2 text-white/40 text-xs">
+                <div className="flex items-center gap-2 text-white/40 text-sm">
                   <span className="text-primary-400">💰</span>
                   <div>
                     <span className="font-semibold text-white/70">Budget: </span>
@@ -224,27 +224,27 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
               {/* Travel Times estimates */}
               {travelTimes && (
                 <div className="bg-white/3 rounded-xl p-4 border border-white/5 space-y-2.5">
-                  <p className="text-[10px] uppercase font-bold text-white/40 tracking-wider flex items-center gap-1.5">
+                  <p className="text-xs uppercase font-bold text-white/40 tracking-wider flex items-center gap-1.5">
                     <FiClock size={11} className="text-primary-400" /> Travel Duration Estimates
                   </p>
                   <div className="grid grid-cols-3 gap-2 text-center text-xs">
                     <div className={`p-2 rounded-lg border ${travelTimes.recommended === 'walking' ? 'bg-neon-green/10 border-neon-green/20 text-neon-green' : 'bg-white/2 border-white/5 text-white/50'}`}>
                       <span className="block text-sm">🚶</span>
                       <span className="block font-bold mt-0.5">{travelTimes.walking}m</span>
-                      <span className="text-[9px] opacity-60">Walk</span>
+                      <span className="text-[10px] opacity-60">Walk</span>
                     </div>
                     <div className={`p-2 rounded-lg border ${travelTimes.recommended === 'bicycling' ? 'bg-primary-500/20 border-primary-500/25 text-primary-300' : 'bg-white/2 border-white/5 text-white/50'}`}>
                       <span className="block text-sm">🚴</span>
                       <span className="block font-bold mt-0.5">{travelTimes.bicycling}m</span>
-                      <span className="text-[9px] opacity-60">Cycle</span>
+                      <span className="text-[10px] opacity-60">Cycle</span>
                     </div>
                     <div className={`p-2 rounded-lg border ${travelTimes.recommended === 'driving' ? 'bg-primary-500/20 border-primary-500/25 text-primary-300' : 'bg-white/2 border-white/5 text-white/50'}`}>
                       <span className="block text-sm">🚗</span>
                       <span className="block font-bold mt-0.5">{travelTimes.driving}m</span>
-                      <span className="text-[9px] opacity-60">Drive</span>
+                      <span className="text-[10px] opacity-60">Drive</span>
                     </div>
                   </div>
-                  <div className="text-[10px] text-primary-300 font-semibold bg-primary-500/10 p-2 rounded-lg border border-primary-500/15 text-center mt-1">
+                  <div className="text-xs text-primary-300 font-semibold bg-primary-500/10 p-2 rounded-lg border border-primary-500/15 text-center mt-1">
                     💡 Optimal Transport: {recommendedLabel[travelTimes.recommended]} takes less time!
                   </div>
                 </div>
@@ -255,7 +255,7 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
                 <button
                   onClick={handleSave}
                   disabled={saving || saved}
-                  className={`flex-1 py-2.5 rounded-xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all
+                  className={`flex-1 py-2.5 rounded-xl border font-bold text-sm flex items-center justify-center gap-1.5 transition-all
                     ${saved
                       ? 'bg-accent-500/15 border-accent-500/25 text-accent-400'
                       : 'bg-white/5 border-white/10 text-white/70 hover:bg-white/10 hover:text-white'
@@ -268,7 +268,7 @@ const PlaceCard = ({ place, onSave, isSaved = false }) => {
                   href={mapsUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 btn-primary py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-glow-purple-sm"
+                  className="flex-1 btn-primary py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 shadow-glow-purple-sm"
                 >
                   <FiNavigation size={14} />
                   Open in Maps

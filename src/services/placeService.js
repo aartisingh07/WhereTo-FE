@@ -6,6 +6,12 @@ export const placeService = {
     return response.data;
   },
 
+  getAutocompleteSuggestions: async (text) => {
+    const response = await api.get('/places/autocomplete', { params: { text } });
+    return response.data;
+  },
+
+
   savePlace: async (placeData) => {
     const response = await api.post('/user/places/save', placeData);
     return response.data;

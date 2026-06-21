@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { FiMapPin, FiNavigation, FiAlertCircle, FiRefreshCw } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import useGeolocation from '../hooks/useGeolocation';
@@ -67,7 +67,76 @@ const Explore = () => {
     adventureType: 'any'
   });
 
+  // Autocomplete states & refs
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+  const [activeInputId, setActiveInputId] = useState(null);
+  const typingTimeoutRef = useRef(null);
+
   const { location, loading: geoLoading, error: geoError, getLocation } = useGeolocation();
+
+
+  const handleInputChange = (val, inputId) => {
+    setLocationQuery(val);
+    setActiveInputId(inputId);
+
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+
+    if (!val.trim()) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setShowSuggestions(true);
+    setSuggestionsLoading(true);
+
+    typingTimeoutRef.current = setTimeout(async () => {
+      try {
+        const data = await placeService.getAutocompleteSuggestions(val);
+        setSuggestions(data.suggestions || []);
+      } catch (err) {
+        console.error('Failed to fetch suggestions:', err);
+      } finally {
+        setSuggestionsLoading(false);
+      }
+    }, 300); // 300ms debounce
+  };
+
+  const handleInputFocus = (inputId) => {
+    setActiveInputId(inputId);
+    if (locationQuery.trim()) {
+      setShowSuggestions(true);
+    }
+  };
+
+  const handleInputBlur = () => {
+    // Delay hiding suggestions to allow button onClick to fire first
+    setTimeout(() => {
+      setShowSuggestions(false);
+    }, 200);
+  };
+
+  const handleSelectSuggestion = async (suggestion) => {
+    setLocationQuery(suggestion.formatted);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    setLocationMode('custom');
+    setStep(3);
+    await fetchPlaces(null, null, suggestion.formatted);
+  };
+
+  // Clean up timeouts
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // ── Step 1: Mood selected ──
   const handleMoodSelect = (moodId) => {
@@ -180,6 +249,10 @@ const Explore = () => {
     setLocationMode('current');
     setError(null);
     setLoading(false);
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setSuggestionsLoading(false);
+    setActiveInputId(null);
   };
 
   const selectedMood = moods.find((m) => m.id === mood);
@@ -424,13 +497,45 @@ const Explore = () => {
                 <label className="block text-white/50 text-xs font-bold uppercase tracking-wider mb-2 pl-1">
                   Area or City Name
                 </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Dadar, Mumbai or Gujarat"
-                  value={locationQuery}
-                  onChange={(e) => setLocationQuery(e.target.value)}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-base placeholder-white/20 focus:outline-none focus:border-primary-500/40 focus:bg-white/8 transition-all"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="e.g. Dadar, Mumbai or Gujarat"
+                    value={locationQuery}
+                    onChange={(e) => handleInputChange(e.target.value, 'step2')}
+                    onFocus={() => handleInputFocus('step2')}
+                    onBlur={handleInputBlur}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white text-base placeholder-white/20 focus:outline-none focus:border-primary-500/40 focus:bg-white/8 transition-all"
+                  />
+                  {showSuggestions && activeInputId === 'step2' && (
+                    <div className="absolute z-50 left-0 right-0 mt-1.5 bg-dark-800/95 border border-white/10 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-white/5">
+                      {suggestionsLoading ? (
+                        <div className="p-3.5 text-sm text-white/40 text-center flex items-center justify-center gap-2">
+                          <FiRefreshCw size={14} className="animate-spin text-primary-400" />
+                          <span>Searching locations...</span>
+                        </div>
+                      ) : suggestions.length === 0 ? (
+                        <div className="p-3.5 text-sm text-white/40 text-center">No matching locations found</div>
+                      ) : (
+                        suggestions.map((s) => (
+                          <button
+                            key={s.placeId}
+                            type="button"
+                            onClick={() => handleSelectSuggestion(s)}
+                            className="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors cursor-pointer block"
+                          >
+                            <div className="text-white font-medium text-sm">
+                              {s.name || s.formatted.split(',')[0]}
+                            </div>
+                            <div className="text-white/40 text-xs mt-0.5 truncate">
+                              {s.formatted}
+                            </div>
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -527,13 +632,45 @@ const Explore = () => {
               </div>
               <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
                 <form onSubmit={handleSearchSubmit} className="flex gap-2 w-full md:w-auto">
-                  <input
-                    type="text"
-                    placeholder="Search new location..."
-                    value={locationQuery}
-                    onChange={(e) => setLocationQuery(e.target.value)}
-                    className="bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-primary-500/40 focus:bg-white/8 transition-all flex-1 md:w-40"
-                  />
+                  <div className="relative flex-1 md:w-48">
+                    <input
+                      type="text"
+                      placeholder="Search new location..."
+                      value={locationQuery}
+                      onChange={(e) => handleInputChange(e.target.value, 'step3')}
+                      onFocus={() => handleInputFocus('step3')}
+                      onBlur={handleInputBlur}
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-1.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-primary-500/40 focus:bg-white/8 transition-all"
+                    />
+                    {showSuggestions && activeInputId === 'step3' && (
+                      <div className="absolute z-50 left-0 right-0 mt-1.5 bg-dark-800/95 border border-white/10 rounded-xl shadow-2xl overflow-hidden max-h-60 overflow-y-auto divide-y divide-white/5 md:w-64 md:left-auto md:right-0">
+                        {suggestionsLoading ? (
+                          <div className="p-3 text-xs text-white/40 text-center flex items-center justify-center gap-2">
+                            <FiRefreshCw size={12} className="animate-spin text-primary-400" />
+                            <span>Searching locations...</span>
+                          </div>
+                        ) : suggestions.length === 0 ? (
+                          <div className="p-3 text-xs text-white/40 text-center">No locations found</div>
+                        ) : (
+                          suggestions.map((s) => (
+                            <button
+                              key={s.placeId}
+                              type="button"
+                              onClick={() => handleSelectSuggestion(s)}
+                              className="w-full text-left px-3 py-2 hover:bg-white/5 transition-colors cursor-pointer block"
+                            >
+                              <div className="text-white font-medium text-xs truncate">
+                                {s.name || s.formatted.split(',')[0]}
+                              </div>
+                              <div className="text-white/40 text-[10px] mt-0.5 truncate">
+                                {s.formatted}
+                              </div>
+                            </button>
+                          ))
+                        )}
+                      </div>
+                    )}
+                  </div>
                   <button
                     type="submit"
                     disabled={!locationQuery.trim()}

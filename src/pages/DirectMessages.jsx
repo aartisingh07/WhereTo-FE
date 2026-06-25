@@ -122,6 +122,9 @@ const DirectMessages = () => {
   const handleMarkAsRead = useCallback(async (senderId) => {
     try {
       await chatService.markAsRead(senderId);
+      setActiveChats((prev) =>
+        prev.map((c) => (c.user._id === senderId ? { ...c, unreadCount: 0 } : c))
+      );
     } catch (err) {
       console.error('Failed to mark messages as read:', err);
     }
@@ -395,7 +398,9 @@ const DirectMessages = () => {
                     className={`w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all duration-200 cursor-pointer
                       ${isActive 
                         ? 'bg-primary-500/10 border border-primary-500/20 text-white shadow-glow-purple-sm' 
-                        : 'border border-transparent hover:bg-white/3 hover:border-white/5 text-white/70 hover:text-white'}`}
+                        : chat.unreadCount > 0
+                          ? 'bg-primary-500/5 border border-primary-500/15 text-white shadow-glow-purple-sm'
+                          : 'border border-transparent hover:bg-white/3 hover:border-white/5 text-white/70 hover:text-white'}`}
                   >
                     {/* Avatar */}
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 flex-shrink-0">
@@ -409,8 +414,15 @@ const DirectMessages = () => {
                     </div>
                     {/* Username & Last Msg */}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-xs truncate">{chat.user.username}</p>
-                      <p className="text-[10px] text-white/30 truncate mt-0.5">
+                      <div className="flex items-center justify-between">
+                        <p className={`font-semibold text-xs truncate ${chat.unreadCount > 0 && !isActive ? 'text-primary-300' : ''}`}>
+                          {chat.user.username}
+                        </p>
+                        {chat.unreadCount > 0 && !isActive && (
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                        )}
+                      </div>
+                      <p className={`text-[10px] truncate mt-0.5 ${chat.unreadCount > 0 && !isActive ? 'text-white font-medium' : 'text-white/30'}`}>
                         {chat.lastMessage ? chat.lastMessage.content : 'No messages yet'}
                       </p>
                     </div>

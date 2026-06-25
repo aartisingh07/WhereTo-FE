@@ -48,7 +48,7 @@ const Navbar = () => {
       
       // If we are not currently viewing the chats page, show direct toaster alert
       if (location.pathname !== '/messages') {
-        toast.info(`💬 ${msg.senderUsername || 'Someone'} sent you a message: "${msg.content.length > 50 ? msg.content.substring(0, 50) + '...' : msg.content}"`);
+        toast.info(`💬 ${msg.senderUsername || 'Someone'} sent you a message`);
       }
     };
 

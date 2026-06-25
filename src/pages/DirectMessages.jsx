@@ -56,6 +56,13 @@ const DirectMessages = () => {
   const handleSearchUser = async (e) => {
     e.preventDefault();
     if (!searchQuery.trim()) return;
+
+    if (searchQuery.trim().toLowerCase() === user?.username?.toLowerCase()) {
+      setSearchError('You cannot search for yourself');
+      setSearchResult(null);
+      return;
+    }
+
     setSearching(true);
     setSearchError('');
     setSearchResult(null);

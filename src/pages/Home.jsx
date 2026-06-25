@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { toast } from 'react-toastify';
 import {
   FiArrowRight, FiMapPin, FiUsers, FiZap, FiHeart,
-  FiCompass, FiHash, FiUser, FiSunrise, FiExternalLink, FiClock
+  FiCompass, FiHash, FiUser, FiSunrise, FiExternalLink, FiClock, FiTrash2
 } from 'react-icons/fi';
 import { outingPlanService } from '../services/outingPlanService';
 import { roomService } from '../services/roomService';
@@ -219,6 +220,18 @@ const UserHome = ({ user }) => {
     }
   };
 
+  const handleCancelPlan = async (planId) => {
+    if (!window.confirm("Are you sure you want to cancel this outing plan? This will notify all room participants.")) return;
+    try {
+      await outingPlanService.deletePlan(planId);
+      toast.success("Outing plan cancelled successfully");
+      setPlans((prev) => prev.filter((p) => p._id !== planId));
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || "Failed to cancel outing plan";
+      toast.error(`Failed to cancel outing plan: ${errorMsg}`);
+    }
+  };
+
   const quickActions = [
     {
       emoji: '📍',
@@ -404,9 +417,19 @@ const UserHome = ({ user }) => {
                   </div>
 
                   <div className="flex justify-between items-center pt-3 border-t border-white/5 mt-auto">
-                    <span className="text-[10px] text-white/30">
-                      Room: <span className="font-semibold text-white/50">{plan.roomName || 'Hangout'}</span>
-                    </span>
+                    <div className="flex flex-col text-left">
+                      <span className="text-[10px] text-white/30">
+                        Room: <span className="font-semibold text-white/50">{plan.roomName || 'Hangout'}</span>
+                      </span>
+                      {(plan.creator === user?._id || plan.creator?._id === user?._id) && (
+                        <button
+                          onClick={() => handleCancelPlan(plan._id)}
+                          className="text-[10px] text-red-400 hover:text-red-300 font-semibold transition-colors mt-1 flex items-center gap-1 cursor-pointer bg-transparent border-none outline-none"
+                        >
+                          <FiTrash2 size={10} /> Cancel Outing
+                        </button>
+                      )}
+                    </div>
                     {plan.mapsLink && (
                       <a
                         href={plan.mapsLink}

@@ -215,6 +215,11 @@ const Room = () => {
       fetchRoomPlan();
     });
 
+    socket.on('outing-plan-cancelled', () => {
+      setScheduledPlan(null);
+      toast.info("The upcoming outing plan has been cancelled by the host.");
+    });
+
     return () => {
       socket.emit('leave-room', { roomId: id });
       socket.off('new-message');
@@ -224,6 +229,7 @@ const Room = () => {
       socket.off('vote-update');
       socket.off('vote-result');
       socket.off('outing-plan-scheduled');
+      socket.off('outing-plan-cancelled');
     };
   }, [socket, room, id, user?._id, fetchRoomPlan]);
 
@@ -281,6 +287,18 @@ const Room = () => {
       setActivity(newActivity);
     } catch {
       toast.error('Could not change activity');
+    }
+  };
+
+  const handleCancelPlan = async () => {
+    if (!window.confirm("Are you sure you want to cancel this outing plan? This will notify all room participants.")) return;
+    try {
+      await outingPlanService.deletePlan(scheduledPlan._id);
+      toast.success("Outing plan cancelled successfully");
+      setScheduledPlan(null);
+    } catch (err) {
+      const errorMsg = err.response?.data?.message || err.message || "Failed to cancel outing plan";
+      toast.error(`Failed to cancel outing plan: ${errorMsg}`);
     }
   };
 
@@ -432,6 +450,14 @@ const Room = () => {
                     Directions
                     <FiExternalLink size={12} />
                   </a>
+                )}
+                {(scheduledPlan.creator === user?._id || scheduledPlan.creator?._id === user?._id) && (
+                  <button
+                    onClick={handleCancelPlan}
+                    className="text-xs text-red-400 hover:text-red-300 transition-colors font-semibold flex items-center gap-1 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 px-2.5 py-1 rounded-lg cursor-pointer"
+                  >
+                    Cancel Outing
+                  </button>
                 )}
               </div>
             </div>

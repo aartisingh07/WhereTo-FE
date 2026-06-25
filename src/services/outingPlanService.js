@@ -15,4 +15,9 @@ export const outingPlanService = {
     const response = await api.get(`/outing-plans/room/${roomId}`);
     return response.data;
   },
+
+  deletePlan: async (planId) => {
+    const response = await api.delete(`/outing-plans/${planId}`);
+    return response.data;
+  },
 };

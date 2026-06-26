@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { chatService } from '../services/chatService';
@@ -341,7 +342,7 @@ const DirectMessages = () => {
               <div className="space-y-1">
                 {pendingRequests.map((req) => (
                   <div key={req._id} className="glass-card p-3 flex items-center justify-between gap-2 border-primary-500/20 bg-primary-500/5">
-                    <div className="flex items-center gap-2 min-w-0">
+                    <Link to={`/profile/${req.sender._id}`} className="flex items-center gap-2 min-w-0 hover:opacity-80 transition-opacity" title="View Profile">
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 flex-shrink-0">
                         <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                           {req.sender.avatar ? (
@@ -352,7 +353,7 @@ const DirectMessages = () => {
                         </div>
                       </div>
                       <span className="text-white text-xs font-semibold truncate">{req.sender.username}</span>
-                    </div>
+                    </Link>
                     <div className="flex items-center gap-1 flex-shrink-0">
                       <button
                         onClick={() => handleAcceptRequest(req._id, req.sender.username)}
@@ -441,22 +442,24 @@ const DirectMessages = () => {
           <>
             {/* Active Chat Header */}
             <div className="px-6 py-4 border-b border-white/5 bg-dark-950/40 flex items-center gap-3 flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5">
-                <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
-                  {activeChat.user.avatar ? (
-                    <img src={activeChat.user.avatar} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-white font-bold">{activeChat.user.username[0]?.toUpperCase()}</span>
-                  )}
+              <Link to={`/profile/${activeChat.user._id}`} className="flex items-center gap-3 group" title="View Profile">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 group-hover:scale-105 transition-transform duration-200">
+                  <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
+                    {activeChat.user.avatar ? (
+                      <img src={activeChat.user.avatar} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-white font-bold">{activeChat.user.username[0]?.toUpperCase()}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div>
-                <p className="font-display font-bold text-white text-sm leading-tight">{activeChat.user.username}</p>
-                <span className="inline-flex items-center gap-1 text-[10px] text-neon-green font-semibold mt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse" />
-                  Active connection
-                </span>
-              </div>
+                <div>
+                  <p className="font-display font-bold text-white text-sm leading-tight group-hover:text-primary-300 transition-colors">{activeChat.user.username}</p>
+                  <span className="inline-flex items-center gap-1 text-[10px] text-neon-green font-semibold mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-neon-green animate-pulse" />
+                    Active connection · View Profile →
+                  </span>
+                </div>
+              </Link>
             </div>
 
             {/* Messages Area */}

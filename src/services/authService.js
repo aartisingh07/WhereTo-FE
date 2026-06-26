@@ -20,5 +20,10 @@ export const authService = {
     const response = await api.delete('/user');
     return response.data;
   },
+
+  getUserProfile: async (userId) => {
+    const response = await api.get(`/user/profile/${userId}`);
+    return response.data;
+  },
 };
 

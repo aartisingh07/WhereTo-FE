@@ -6,7 +6,7 @@ import { notificationService } from '../../services/notificationService';
 import { chatService } from '../../services/chatService';
 import { toast } from 'react-toastify';
 import { HiMenu, HiX } from 'react-icons/hi';
-import { FiLogOut, FiUser, FiCompass, FiUsers, FiBell, FiCheck, FiMessageSquare, FiImage } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiCompass, FiUsers, FiBell, FiCheck, FiMessageSquare, FiImage, FiHome } from 'react-icons/fi';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -126,12 +126,19 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   const navLinks = [
-    { path: '/explore', label: 'Explore', icon: <FiCompass size={18} /> },
-    { path: '/join-room', label: 'Join Room', icon: <FiUsers size={18} /> },
+    { path: '/', label: 'Home', icon: <FiHome size={18} /> },
   ];
 
   if (isAuthenticated) {
-    navLinks.unshift({ path: '/feed', label: 'Feed', icon: <FiImage size={18} /> });
+    navLinks.push({ path: '/feed', label: 'Feed', icon: <FiImage size={18} /> });
+  }
+
+  navLinks.push(
+    { path: '/explore', label: 'Explore', icon: <FiCompass size={18} /> },
+    { path: '/join-room', label: 'Join Room', icon: <FiUsers size={18} /> }
+  );
+
+  if (isAuthenticated) {
     navLinks.push({ path: '/messages', label: 'Chats', icon: <FiMessageSquare size={18} /> });
   }
 

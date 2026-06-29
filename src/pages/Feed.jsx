@@ -282,7 +282,7 @@ const Feed = () => {
                             placeholder="Add a comment..."
                             value={newCommentText[post._id] || ''}
                             onChange={(e) => setNewCommentText(prev => ({ ...prev, [post._id]: e.target.value }))}
-                            className="flex-1 bg-white/3 border border-white/5 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-primary-500/30 focus:bg-white/5 transition-all"
+                            className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-white/20 focus:outline-none focus:border-primary-500/30 focus:bg-white/10 transition-all"
                           />
                           <button
                             type="submit"

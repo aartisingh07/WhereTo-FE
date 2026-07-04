@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
@@ -14,7 +14,116 @@ import { chatService } from '../services/chatService';
 import { memoryService } from '../services/memoryService';
 
 // ─── Logged-OUT landing page ────────────────────────────────────
+const ParticleBackground = () => {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let animationFrameId;
+
+    let width = (canvas.width = canvas.offsetWidth);
+    let height = (canvas.height = canvas.offsetHeight);
+
+    const handleResize = () => {
+      width = canvas.width = canvas.offsetWidth;
+      height = canvas.height = canvas.offsetHeight;
+    };
+    window.addEventListener('resize', handleResize);
+
+    const particles = [];
+    const particleCount = 40;
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        radius: Math.random() * 2 + 1,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: (Math.random() - 0.5) * 0.4,
+        alpha: Math.random() * 0.5 + 0.1,
+      });
+    }
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+
+      particles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (p.x < 0 || p.x > width) p.vx *= -1;
+        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(6, 182, 212, ${p.alpha})`; // Cyan accent color
+        ctx.fill();
+      });
+
+      // Draw lines between close particles
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+
+          if (dist < 100) {
+            ctx.beginPath();
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[i].x - dx, particles[i].y - dy);
+            ctx.strokeStyle = `rgba(59, 130, 246, ${(1 - dist / 100) * 0.08})`; // Blue color lines
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
+      animationFrameId = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none opacity-60 z-0" />;
+};
+
 const GuestHome = () => {
+  const [cycleIndex, setCycleIndex] = useState(0);
+  const [fadeState, setFadeState] = useState('fade-in');
+  const cycleTexts = ['cozy cafes ☕', 'game lobbies 🎮', 'sunset viewpoints 🌅', 'sandy beaches 🌊', 'movie lounges 🎬', 'study lounges 📚'];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setFadeState('fade-out');
+      setTimeout(() => {
+        setCycleIndex((prev) => (prev + 1) % cycleTexts.length);
+        setFadeState('fade-in');
+      }, 300);
+    }, 2800);
+    return () => clearInterval(timer);
+  }, []);
+
+  const [mockPins, setMockPins] = useState([
+    { x: 30, y: 40, name: 'Aarti' },
+    { x: 70, y: 30, name: 'Aditya' },
+    { x: 50, y: 80, name: 'Shetty' }
+  ]);
+  const [sandboxCategory, setSandboxCategory] = useState('cafe');
+
+  const midpoint = mockPins.length > 0 
+    ? {
+        x: Math.round(mockPins.reduce((sum, p) => sum + p.x, 0) / mockPins.length),
+        y: Math.round(mockPins.reduce((sum, p) => sum + p.y, 0) / mockPins.length)
+      }
+    : null;
+
   const features = [
     {
       icon: <FiMapPin className="text-neon-teal" size={24} />,
@@ -47,6 +156,7 @@ const GuestHome = () => {
     <div className="min-h-screen bg-dark-900 bg-grid">
       {/* Hero */}
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
+        <ParticleBackground />
         <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-[120px] pointer-events-none" />
         <div className="absolute top-40 right-1/4 w-96 h-96 bg-accent-500/10 rounded-full blur-[120px] pointer-events-none" />
 
@@ -56,18 +166,21 @@ const GuestHome = () => {
             Built for your friend group
           </div>
 
-          <h1 className="font-display font-extrabold text-5xl sm:text-6xl md:text-7xl leading-tight mb-6 animate-slide-up">
+          <h1 className="font-display font-extrabold text-4xl sm:text-5xl md:text-6xl leading-tight mb-6 animate-slide-up">
             Stop asking.
             <br />
-            <span className="text-gradient">Start going.</span>
+            <span>Start going to </span>
+            <span className={`inline-block text-gradient transition-all duration-300 transform min-w-[280px] text-center sm:text-left ${fadeState === 'fade-in' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'}`}>
+              {cycleTexts[cycleIndex]}
+            </span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto mb-12 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+          <p className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto mb-10 animate-slide-up" style={{ animationDelay: '0.1s' }}>
             The app that kills the "bhai kahan jaayein?" loop forever.
             Find places, plan hangouts, or just vibe with your squad — all in one place.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up mb-16" style={{ animationDelay: '0.2s' }}>
             <Link to="/explore" className="btn-primary text-lg !px-8 !py-4 flex items-center gap-2 group">
               <FiCompass size={20} />
               Explore Places
@@ -78,6 +191,151 @@ const GuestHome = () => {
               Create an account
             </Link>
           </div>
+
+          {/* Sandbox Widget */}
+          <div className="max-w-4xl mx-auto glass-card p-6 sm:p-8 animate-slide-up relative z-20 border border-primary-500/20 shadow-glow-purple" style={{ animationDelay: '0.3s' }}>
+            <div className="flex flex-col md:flex-row gap-8">
+              
+              {/* Grid / Map Canvas */}
+              <div className="flex-1 flex flex-col items-center">
+                <div className="flex justify-between items-center w-full mb-3">
+                  <div className="text-left">
+                    <h3 className="text-sm font-display font-bold text-white">Squad Midpoint Simulator</h3>
+                    <p className="text-[11px] text-white/40">Click on the grid to add friend locations</p>
+                  </div>
+                  <button
+                    onClick={() => setMockPins([])}
+                    className="text-[10px] text-red-400 hover:text-red-300 px-2 py-1 rounded bg-red-500/10 hover:bg-red-500/20 transition-all font-semibold cursor-pointer"
+                  >
+                    Clear Pins
+                  </button>
+                </div>
+                
+                {/* Visual Grid Box */}
+                <div
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                    const names = ['Amit', 'Priya', 'Rahul', 'Zara', 'Sneha', 'Kabir'];
+                    const name = names[mockPins.length % names.length] + ` (P${mockPins.length + 1})`;
+                    setMockPins([...mockPins, { x, y, name }]);
+                  }}
+                  className="relative w-full aspect-square max-w-[280px] bg-dark-950 border border-white/10 rounded-2xl cursor-crosshair overflow-hidden group select-none shadow-inner"
+                  style={{
+                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.03) 1px, transparent 1px)',
+                    backgroundSize: '16px 16px'
+                  }}
+                >
+                  {/* Grid Lines */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-accent-500/5 pointer-events-none" />
+
+                  {/* Render Pins */}
+                  {mockPins.map((p, idx) => (
+                    <div
+                      key={idx}
+                      className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center animate-scale-in pointer-events-none"
+                      style={{ left: `${p.x}%`, top: `${p.y}%` }}
+                    >
+                      <div className="w-5 h-5 rounded-full bg-primary-500 flex items-center justify-center text-[10px] font-bold text-white border border-white/20 shadow-glow-purple-sm">
+                        {p.name[0]}
+                      </div>
+                      <span className="text-[8px] bg-dark-900/90 text-white/70 px-1 rounded mt-0.5 whitespace-nowrap font-mono">{p.name}</span>
+                    </div>
+                  ))}
+
+                  {/* Render Midpoint Centroid */}
+                  {midpoint && (
+                    <div
+                      className="absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center animate-pulse pointer-events-none z-10"
+                      style={{ left: `${midpoint.x}%`, top: `${midpoint.y}%` }}
+                    >
+                      <div className="w-6 h-6 rounded-full bg-cyan-400 flex items-center justify-center text-xs text-dark-950 border border-white shadow-[0_0_15px_#06b6d4]">
+                        🎯
+                      </div>
+                      <span className="text-[9px] bg-cyan-400 text-dark-950 px-1.5 py-0.5 rounded font-bold mt-0.5 whitespace-nowrap shadow-md">
+                        Midpoint
+                      </span>
+                    </div>
+                  )}
+
+                  {mockPins.length === 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center text-center p-4 pointer-events-none">
+                      <p className="text-xs text-white/25">Click anywhere inside to start simulating your squad's locations!</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Control Panel / Suggestions */}
+              <div className="flex-1 flex flex-col justify-between text-left">
+                <div>
+                  <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2">Category Selector</h4>
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    {[
+                      { id: 'cafe', label: '☕ Cafe' },
+                      { id: 'nature', label: '🌅 Viewpoints' },
+                      { id: 'entertainment', label: '🎮 Play' },
+                      { id: 'food', label: '🍕 Food' }
+                    ].map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSandboxCategory(cat.id)}
+                        className={`text-xs font-semibold px-3 py-2 rounded-xl border text-center transition-all cursor-pointer bg-white/3
+                          ${sandboxCategory === cat.id ? 'border-cyan-400 bg-cyan-500/10 text-cyan-300' : 'border-white/5 text-white/60'}`}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  <h4 className="text-xs font-bold text-cyan-400 uppercase tracking-wider mb-2">Places Found at Midpoint</h4>
+                  <div className="space-y-2">
+                    {mockPins.length === 0 ? (
+                      <div className="p-4 rounded-xl border border-white/5 bg-white/2 text-center text-xs text-white/20">
+                        Add friends to discover midpoint spots
+                      </div>
+                    ) : (
+                      (sandboxCategory === 'cafe' ? [
+                        { name: "The Caffeine Centroid ☕", rating: "4.8 ⭐", dist: "0.2 km from midpoint" },
+                        { name: "Vibe & Brew Espresso 🥛", rating: "4.6 ⭐", dist: "0.5 km from midpoint" },
+                        { name: "Books & Chai Lounge 🍵", rating: "4.7 ⭐", dist: "0.8 km from midpoint" }
+                      ] : sandboxCategory === 'nature' ? [
+                        { name: "Skyline Overlook Peak 🌅", rating: "4.9 ⭐", dist: "0.4 km from midpoint" },
+                        { name: "Blue Lagoon Lakeside 🌊", rating: "4.8 ⭐", dist: "0.9 km from midpoint" },
+                        { name: "Central Canopy Botanical Gardens 🌳", rating: "4.5 ⭐", dist: "1.1 km from midpoint" }
+                      ] : sandboxCategory === 'entertainment' ? [
+                        { name: "Pixel Bowling & Retro Arcade 🎳", rating: "4.7 ⭐", dist: "0.3 km from midpoint" },
+                        { name: "Galaxy Multi-Screen Cinema 🍿", rating: "4.5 ⭐", dist: "0.7 km from midpoint" },
+                        { name: "Active Squad Game Lounge 🎮", rating: "4.8 ⭐", dist: "1.2 km from midpoint" }
+                      ] : [
+                        { name: "Slice of Heaven Wood-fired Pizza 🍕", rating: "4.8 ⭐", dist: "0.2 km from midpoint" },
+                        { name: "Gridline Gourmet Burger Shop 🍔", rating: "4.6 ⭐", dist: "0.6 km from midpoint" },
+                        { name: "Neon Cantina Tacos & Grill 🌮", rating: "4.7 ⭐", dist: "0.8 km from midpoint" }
+                      ]).map((place, idx) => (
+                        <div key={idx} className="p-2.5 rounded-xl border border-white/5 bg-white/3 hover:bg-white/5 transition-all flex items-center justify-between text-xs">
+                          <div>
+                            <p className="font-semibold text-white">{place.name}</p>
+                            <p className="text-[10px] text-white/40 mt-0.5">📍 {place.dist}</p>
+                          </div>
+                          <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded font-mono text-cyan-300 font-semibold">{place.rating}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between text-[10px] text-white/30 font-mono">
+                  <span>Squad Size: {mockPins.length}</span>
+                  {midpoint && (
+                    <span>Midpoint: {midpoint.x}x, {midpoint.y}y</span>
+                  )}
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </section>
 

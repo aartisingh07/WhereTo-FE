@@ -4,36 +4,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Light Mode Colors (Slate theme) */
-  --color-bg-900-rgb: 248, 250, 252; /* slate-50 */
-  --color-bg-800-rgb: 241, 245, 249; /* slate-100 */
-  --color-bg-700-rgb: 226, 232, 240; /* slate-200 */
-  --color-bg-600-rgb: 203, 213, 225; /* slate-300 */
-  --color-bg-500-rgb: 148, 163, 184; /* slate-400 */
-  
-  --color-text-white-rgb: 15, 23, 42; /* slate-900 */
-  --color-text-muted-rgb: 71, 85, 105; /* slate-600 */
-  
-  --color-glass-bg: rgba(255, 255, 255, 0.85);
-  --color-glass-border: rgba(15, 23, 42, 0.1);
-}
-
-.dark {
-  /* Dark Mode Colors (Existing Navy Theme) */
-  --color-bg-900-rgb: 5, 11, 20;     /* #050B14 */
-  --color-bg-800-rgb: 10, 20, 36;     /* #0A1424 */
-  --color-bg-700-rgb: 16, 32, 56;     /* #102038 */
-  --color-bg-600-rgb: 26, 47, 76;     /* #1A2F4C */
-  --color-bg-500-rgb: 36, 62, 96;     /* #243E60 */
-  
-  --color-text-white-rgb: 255, 255, 255;
-  --color-text-muted-rgb: 226, 232, 240;
-  
-  --color-glass-bg: rgba(10, 20, 36, 0.6);
-  --color-glass-border: rgba(255, 255, 255, 0.08);
-}
-
 /* ===== BASE STYLES ===== */
 @layer base {
   * {
@@ -48,8 +18,8 @@
 
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background-color: rgb(var(--color-bg-900-rgb));
-    color: rgb(var(--color-text-white-rgb));
+    background-color: #050B14;
+    color: #e2e8f0;
     min-height: 100vh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
@@ -63,7 +33,7 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: rgb(var(--color-bg-800-rgb));
+    background: #0A1424;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -80,31 +50,16 @@
 @layer components {
   /* Glassmorphism card */
   .glass-card {
-    background-color: var(--color-glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--color-glass-border);
-    border-radius: 1rem;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl;
   }
 
   .glass-card-hover {
-    background-color: var(--color-glass-bg);
-    backdrop-filter: blur(20px);
-    border: 1px solid var(--color-glass-border);
-    border-radius: 1rem;
-    @apply transition-all duration-300;
-  }
-  .glass-card-hover:hover {
-    background-color: rgba(var(--color-text-white-rgb), 0.04);
-    border-color: rgba(var(--color-text-white-rgb), 0.15);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(var(--color-text-white-rgb), 0.06);
+    @apply glass-card transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:shadow-card-hover hover:-translate-y-1;
   }
 
   /* Gradient buttons */
   .btn-primary {
-    color: #ffffff !important;
-    @apply bg-gradient-to-r from-primary-500 to-accent-500 font-semibold 
+    @apply bg-gradient-to-r from-primary-500 to-accent-500 text-white font-semibold 
            px-6 py-3 rounded-xl transition-all duration-300 
            hover:from-primary-600 hover:to-accent-600 hover:shadow-glow-purple 
            hover:-translate-y-0.5 active:translate-y-0 
@@ -112,60 +67,42 @@
   }
 
   .btn-secondary {
-    background-color: var(--color-glass-bg);
-    border: 1px solid var(--color-glass-border);
-    color: rgb(var(--color-text-white-rgb));
-    @apply font-medium px-6 py-3 rounded-xl transition-all duration-300 
+    @apply bg-white/5 border border-white/10 text-white font-medium 
+           px-6 py-3 rounded-xl transition-all duration-300 
+           hover:bg-white/10 hover:border-white/20 
            hover:-translate-y-0.5 active:translate-y-0;
-  }
-  .btn-secondary:hover {
-    background-color: rgba(var(--color-text-white-rgb), 0.08);
-    border-color: rgba(var(--color-text-white-rgb), 0.2);
   }
 
   .btn-ghost {
-    @apply bg-transparent font-medium px-4 py-2 rounded-lg 
-           transition-all duration-200;
-    color: rgb(var(--color-text-white-rgb) / 0.7);
-  }
-  .btn-ghost:hover {
-    background-color: rgba(var(--color-text-white-rgb), 0.06);
-    color: rgb(var(--color-text-white-rgb));
+    @apply bg-transparent text-white/70 font-medium px-4 py-2 rounded-lg 
+           transition-all duration-200 hover:bg-white/5 hover:text-white;
   }
 
   /* Input fields */
   .input-field {
-    background-color: rgba(var(--color-text-white-rgb), 0.02);
-    border: 1px solid rgba(var(--color-text-white-rgb), 0.15);
-    color: rgb(var(--color-text-white-rgb));
-    @apply w-full rounded-xl px-4 py-3 
-           transition-all duration-300 
-           focus:outline-none focus:border-primary-500/50 
+    @apply w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 
+           text-white placeholder-white/30 transition-all duration-300 
+           focus:outline-none focus:border-primary-500/50 focus:bg-white/10 
            focus:shadow-glow-purple;
-  }
-  .input-field::placeholder {
-    color: rgb(var(--color-text-white-rgb) / 0.35);
   }
 
   /* Text gradient */
   .text-gradient {
-    @apply bg-gradient-to-r from-primary-500 via-accent-500 to-primary-500 
+    @apply bg-gradient-to-r from-primary-400 via-accent-400 to-primary-400 
            bg-clip-text text-transparent;
   }
 
   /* Animated background grid */
   .bg-grid {
     background-image: 
-      linear-gradient(rgba(var(--color-text-white-rgb), 0.02) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(var(--color-text-white-rgb), 0.02) 1px, transparent 1px);
+      linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
     background-size: 60px 60px;
-    transition: background-image 0.3s ease;
   }
 
   /* Skeleton loading */
   .skeleton {
-    background-color: rgba(var(--color-text-white-rgb), 0.05);
-    @apply rounded-xl animate-pulse;
+    @apply bg-white/5 rounded-xl animate-pulse;
   }
 
   /* Badge */
@@ -174,15 +111,15 @@
   }
 
   .badge-purple {
-    @apply badge bg-primary-500/10 text-primary-600 dark:text-primary-300 border border-primary-500/20;
+    @apply badge bg-primary-500/20 text-primary-300 border border-primary-500/20;
   }
 
   .badge-cyan {
-    @apply badge bg-accent-500/10 text-accent-600 dark:text-accent-300 border border-accent-500/20;
+    @apply badge bg-accent-500/20 text-accent-300 border border-accent-500/20;
   }
 
   .badge-teal {
-    @apply badge bg-neon-teal/10 text-neon-teal border border-neon-teal/20;
+    @apply badge bg-neon-teal/20 text-neon-teal border border-neon-teal/20;
   }
 }
 
@@ -222,17 +159,355 @@
 }
 
 .Toastify__toast {
-  background: var(--color-glass-bg) !important;
+  background: rgba(18, 18, 26, 0.95) !important;
   backdrop-filter: blur(20px) !important;
-  border: 1px solid var(--color-glass-border) !important;
-  color: rgb(var(--color-text-white-rgb)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 12px !important;
+  color: #e2e8f0 !important;
 }
 
 .Toastify__close-button {
-  color: rgb(var(--color-text-white-rgb) / 0.5) !important;
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
 .Toastify__progress-bar {
   background: linear-gradient(to right, #3b82f6, #06b6d4) !important;
+}
+
+
+/* ==========================================================================
+   ===== LIGHT THEME OVERRIDES (VITE HOT-RELOAD SAFE) =====================
+   ========================================================================== */
+
+.light {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.light body {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+/* Layout backgrounds */
+.light .bg-dark-900,
+.light .min-h-screen.bg-dark-900 {
+  background-color: #ffffff !important;
+}
+
+.light .bg-dark-800 {
+  background-color: #f8fafc !important;
+}
+
+.light .bg-dark-700 {
+  background-color: #f1f5f9 !important;
+}
+
+.light .bg-dark-600 {
+  background-color: #e2e8f0 !important;
+}
+
+.light .bg-dark-500 {
+  background-color: #cbd5e1 !important;
+}
+
+/* Scrollbar overrides */
+.light ::-webkit-scrollbar-track {
+  background: #f1f5f9 !important;
+}
+
+/* Landing page hero background */
+.light .bg-hero-gradient {
+  background: radial-gradient(circle at top, #eff6ff 0%, #ffffff 70%) !important;
+}
+
+.light .bg-grid {
+  background-image: 
+    linear-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.08) 1px, transparent 1px) !important;
+}
+
+/* Borders */
+.light .border-white\/5 {
+  border-color: rgba(15, 23, 42, 0.06) !important;
+}
+.light .border-white\/10 {
+  border-color: rgba(15, 23, 42, 0.1) !important;
+}
+.light .border-white\/20 {
+  border-color: rgba(15, 23, 42, 0.18) !important;
+}
+.light .border-white\/30 {
+  border-color: rgba(15, 23, 42, 0.25) !important;
+}
+.light .border-cyan-400\/30 {
+  border-color: rgba(6, 182, 212, 0.4) !important;
+}
+
+/* Cards */
+.light .glass-card {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04) !important;
+}
+
+.light .glass-card-hover:hover {
+  background-color: #ffffff !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.08) !important;
+}
+
+/* Inputs & Form fields */
+.light .input-field {
+  background-color: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+.light .input-field:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.15) !important;
+}
+.light .input-field::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Text overrides - Force dark colors in light mode */
+.light .text-white {
+  color: #0f172a !important;
+}
+.light .text-white\/90 { color: rgba(15, 23, 42, 0.9) !important; }
+.light .text-white\/80 { color: rgba(15, 23, 42, 0.8) !important; }
+.light .text-white\/70 { color: rgba(15, 23, 42, 0.7) !important; }
+.light .text-white\/60 { color: rgba(15, 23, 42, 0.6) !important; }
+.light .text-white\/50 { color: rgba(15, 23, 42, 0.5) !important; }
+.light .text-white\/40 { color: rgba(15, 23, 42, 0.4) !important; }
+.light .text-white\/30 { color: rgba(15, 23, 42, 0.3) !important; }
+.light .text-white\/25 { color: rgba(15, 23, 42, 0.25) !important; }
+.light .text-white\/20 { color: rgba(15, 23, 42, 0.2) !important; }
+.light .text-white\/10 { color: rgba(15, 23, 42, 0.1) !important; }
+
+.light .text-slate-100,
+.light .text-slate-200,
+.light .text-slate-300,
+.light .text-slate-400 {
+  color: #1e293b !important;
+}
+.light .text-slate-400\/70,
+.light .text-slate-400\/60,
+.light .text-slate-500 {
+  color: #475569 !important;
+}
+
+/* Buttons */
+.light .btn-primary,
+.light .btn-primary * {
+  color: #ffffff !important;
+}
+
+.light .btn-secondary {
+  background-color: #f8fafc !important;
+  border-color: rgba(15, 23, 42, 0.1) !important;
+  color: #0f172a !important;
+}
+.light .btn-secondary:hover {
+  background-color: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+}
+
+.light .btn-ghost {
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+.light .btn-ghost:hover {
+  background-color: rgba(15, 23, 42, 0.05) !important;
+  color: #0f172a !important;
+}
+
+/* Badges */
+.light .badge-purple {
+  background-color: #eff6ff !important;
+  color: #1d4ed8 !important;
+  border-color: #bfdbfe !important;
+}
+.light .badge-cyan {
+  background-color: #ecfeff !important;
+  color: #0891b2 !important;
+  border-color: #a5f3fc !important;
+}
+
+/* Toast override for light mode */
+.light .Toastify__toast {
+  background: #ffffff !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06) !important;
+}
+.light .Toastify__close-button {
+  color: rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Background opacity helper overrides */
+.light .bg-white\/5 {
+  background-color: rgba(15, 23, 42, 0.04) !important;
+}
+.light .bg-white\/10 {
+  background-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Icons & specifics */
+.light .text-white\/45 {
+  color: rgba(15, 23, 42, 0.45) !important;
+}
+
+/* ==========================================================================
+   Navbar & Header Specific Light Overrides
+   ========================================================================== */
+
+.light nav.bg-dark-900\/80 {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Nav links in light mode */
+.light nav .text-white\/60 {
+  color: rgba(15, 23, 42, 0.65) !important;
+}
+.light nav .text-white\/60:hover {
+  color: #0f172a !important;
+  background-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Active navigation link */
+.light nav .bg-primary-500\/20 {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  color: #1d4ed8 !important;
+}
+
+/* Logo brand text gradient */
+.light nav .text-gradient {
+  background: linear-gradient(135deg, #1d4ed8, #0891b2) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Log In ghost button inside Navbar */
+.light nav .btn-ghost {
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+.light nav .btn-ghost:hover {
+  color: #0f172a !important;
+  background-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+/* Mobile dropdown menu */
+.light nav .bg-dark-800\/95 {
+  background-color: rgba(255, 255, 255, 0.96) !important;
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Notification counts and bell icons */
+.light nav button,
+.light nav .text-white\/40 {
+  color: rgba(15, 23, 42, 0.6) !important;
+}
+.light nav button:hover {
+  color: #0f172a !important;
+  background-color: rgba(15, 23, 42, 0.05) !important;
+}
+
+/* ==========================================================================
+   Chats & Direct Messages Page Light Overrides
+   ========================================================================== */
+
+.light .bg-dark-950 {
+  background-color: #f8fafc !important; /* light grey sidebar */
+  border-right-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.light .bg-dark-900\/40 {
+  background-color: #f1f5f9 !important; /* light grey sidebar header */
+  border-bottom-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Selected active chat item inside sidebar list */
+.light .bg-primary-500\/10 {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+  border-color: rgba(59, 130, 246, 0.2) !important;
+}
+
+/* Unread chat item inside sidebar list */
+.light .bg-primary-500\/5 {
+  background-color: rgba(59, 130, 246, 0.05) !important;
+  border-color: rgba(59, 130, 246, 0.15) !important;
+}
+
+/* Hover chat item inside sidebar list */
+.light .hover\:bg-white\/3:hover {
+  background-color: rgba(15, 23, 42, 0.03) !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Text overrides in chat sidebar */
+.light .text-white\/70 {
+  color: rgba(15, 23, 42, 0.7) !important;
+}
+.light .text-white\/30 {
+  color: rgba(15, 23, 42, 0.45) !important;
+}
+.light .text-white\/20 {
+  color: rgba(15, 23, 42, 0.4) !important;
+}
+
+/* Input search fields inside DirectMessages.jsx */
+.light .bg-white\/5.border-white\/10 {
+  background-color: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+.light .bg-white\/5.border-white\/10::placeholder {
+  color: rgba(15, 23, 42, 0.35) !important;
+}
+
+/* Search and Add buttons inside DirectMessages.jsx */
+.light .bg-primary-500\/25,
+.light .bg-primary-500\/20 {
+  background-color: rgba(59, 130, 246, 0.08) !important;
+  border-color: rgba(59, 130, 246, 0.15) !important;
+  color: #1d4ed8 !important;
+}
+.light .bg-primary-500\/25:hover,
+.light .bg-primary-500\/20:hover {
+  background-color: rgba(59, 130, 246, 0.15) !important;
+  color: #1e40af !important;
+}
+
+/* Profile found search card result */
+.light .bg-white\/3 {
+  background-color: #ffffff !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.03) !important;
+}
+
+/* Chat bubble overrides for sender (light grey) and recipient (blue) */
+.light .bg-dark-800\/50 {
+  background-color: #f1f5f9 !important;
+  border-color: rgba(15, 23, 42, 0.06) !important;
+  color: #0f172a !important;
+}
+
+.light .bg-primary-600 {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+.light .bg-primary-600 * {
+  color: #ffffff !important;
+}
+
+/* Chat input bar container at bottom of DirectMessages.jsx */
+.light .border-t.border-white\/5.p-4 {
+  border-top-color: rgba(15, 23, 42, 0.08) !important;
+  background-color: #ffffff !important;
+}
+
+.light .bg-dark-900\/50 {
+  background-color: #f8fafc !important;
 }

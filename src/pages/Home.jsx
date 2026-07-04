@@ -111,9 +111,9 @@ const GuestHome = () => {
   }, []);
 
   const [mockPins, setMockPins] = useState([
-    { x: 30, y: 40, name: 'Aarti' },
-    { x: 70, y: 30, name: 'Aditya' },
-    { x: 50, y: 80, name: 'Shetty' }
+    { x: 30, y: 40, name: 'User1' },
+    { x: 70, y: 30, name: 'User2' },
+    { x: 50, y: 80, name: 'User3' }
   ]);
   const [sandboxCategory, setSandboxCategory] = useState('cafe');
 

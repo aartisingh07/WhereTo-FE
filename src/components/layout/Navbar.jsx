@@ -148,7 +148,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <img src="/logo.png" alt="Where To? Logo" className="w-8 h-8 object-contain rounded-lg border border-cyan-500/20" />
+            <img src="/logo.png" alt="Where To? Logo" className="w-9 h-9 object-contain rounded-xl border border-cyan-400/30 shadow-[0_0_12px_rgba(6,182,212,0.2)] group-hover:scale-105 transition-transform duration-300" />
             <span className="font-display font-bold text-xl text-gradient">
               Where To?
             </span>

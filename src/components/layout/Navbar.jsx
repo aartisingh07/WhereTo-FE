@@ -7,6 +7,7 @@ import { chatService } from '../../services/chatService';
 import { toast } from 'react-toastify';
 import { HiMenu, HiX } from 'react-icons/hi';
 import { FiLogOut, FiUser, FiCompass, FiUsers, FiBell, FiCheck, FiMessageSquare, FiImage, FiHome } from 'react-icons/fi';
+import Logo from './Logo';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -148,7 +149,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <img src="/logo.png" alt="Where To? Logo" className="w-9 h-9 object-contain rounded-xl border border-cyan-400/30 shadow-[0_0_12px_rgba(6,182,212,0.2)] group-hover:scale-105 transition-transform duration-300" />
+            <Logo className="w-8 h-8 group-hover:scale-110 group-hover:rotate-6" />
             <span className="font-display font-bold text-xl text-gradient">
               Where To?
             </span>

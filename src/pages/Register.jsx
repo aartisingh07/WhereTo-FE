@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { FiUser, FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
 import { FaGoogle, FaGithub } from 'react-icons/fa';
+import Logo from '../components/layout/Logo';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -66,7 +67,7 @@ const Register = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <img src="/logo.png" alt="Where To? Logo" className="w-10 h-10 object-contain rounded-lg border border-cyan-500/20" />
+            <Logo className="w-10 h-10 hover:rotate-12 hover:scale-110" />
             <span className="font-display font-bold text-2xl text-gradient">Where To?</span>
           </Link>
           <h1 className="font-display font-bold text-3xl text-white mb-2">Create your account</h1>

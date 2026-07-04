@@ -148,7 +148,7 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <span className="text-2xl">📍</span>
+            <img src="/logo.png" alt="Where To? Logo" className="w-8 h-8 object-contain rounded-lg border border-cyan-500/20" />
             <span className="font-display font-bold text-xl text-gradient">
               Where To?
             </span>

@@ -41,7 +41,7 @@ const Login = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
-            <span className="text-3xl">📍</span>
+            <img src="/logo.png" alt="Where To? Logo" className="w-10 h-10 object-contain rounded-lg border border-cyan-500/20" />
             <span className="font-display font-bold text-2xl text-gradient">Where To?</span>
           </Link>
           <h1 className="font-display font-bold text-3xl text-white mb-2">Welcome back</h1>

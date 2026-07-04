@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,13 +8,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Core dark palette (Navy Blue System)
+        white: 'rgb(var(--color-text-white-rgb) / <alpha-value>)',
         dark: {
-          900: '#050B14',
-          800: '#0A1424',
-          700: '#102038',
-          600: '#1A2F4C',
-          500: '#243E60',
+          900: 'rgb(var(--color-bg-900-rgb) / <alpha-value>)',
+          800: 'rgb(var(--color-bg-800-rgb) / <alpha-value>)',
+          700: 'rgb(var(--color-bg-700-rgb) / <alpha-value>)',
+          600: 'rgb(var(--color-bg-600-rgb) / <alpha-value>)',
+          500: 'rgb(var(--color-bg-500-rgb) / <alpha-value>)',
         },
         // Primary — Vibrant Royal Blue
         primary: {

@@ -2,16 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useSocket } from '../../context/SocketContext';
+import { useTheme } from '../../context/ThemeContext';
 import { notificationService } from '../../services/notificationService';
 import { chatService } from '../../services/chatService';
 import { toast } from 'react-toastify';
 import { HiMenu, HiX } from 'react-icons/hi';
-import { FiLogOut, FiUser, FiCompass, FiUsers, FiBell, FiCheck, FiMessageSquare, FiImage, FiHome } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiCompass, FiUsers, FiBell, FiCheck, FiMessageSquare, FiImage, FiHome, FiSun, FiMoon } from 'react-icons/fi';
 import Logo from './Logo';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { socket } = useSocket();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -178,6 +180,15 @@ const Navbar = () => {
 
           {/* Right Section */}
           <div className="flex items-center gap-2 sm:gap-3">
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+              title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            >
+              {theme === 'dark' ? <FiSun size={18} /> : <FiMoon size={18} />}
+            </button>
+
             {/* Notification Bell */}
             {isAuthenticated && (
               <div className="relative">

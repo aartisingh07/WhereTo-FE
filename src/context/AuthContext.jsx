@@ -63,6 +63,11 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const loginWithToken = (tokenValue) => {
+    sessionStorage.setItem('whereto_token', tokenValue);
+    setToken(tokenValue);
+  };
+
   const value = {
     user,
     token,
@@ -70,6 +75,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    loginWithToken,
     isAuthenticated: !!user,
   };
 

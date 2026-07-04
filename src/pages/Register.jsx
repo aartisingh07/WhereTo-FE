@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
 import { FiUser, FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
+import { FaGoogle, FaGithub } from 'react-icons/fa';
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -183,6 +184,34 @@ const Register = () => {
           </form>
 
           {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/5"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-dark-900 px-3 text-white/30">Or continue with</span>
+            </div>
+          </div>
+
+          {/* Social signup buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <a
+              href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}/api/auth/google`}
+              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/5 bg-white/3 hover:bg-white/5 transition-all text-white text-sm font-semibold hover:-translate-y-0.5"
+            >
+              <FaGoogle className="text-red-400" size={16} />
+              Google
+            </a>
+            <a
+              href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}/api/auth/github`}
+              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/5 bg-white/3 hover:bg-white/5 transition-all text-white text-sm font-semibold hover:-translate-y-0.5"
+            >
+              <FaGithub className="text-white" size={16} />
+              GitHub
+            </a>
+          </div>
+
+          {/* Login Link */}
           <div className="mt-6 text-center">
             <p className="text-white/30 text-sm">
               Already have an account?{' '}

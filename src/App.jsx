@@ -11,6 +11,7 @@ import JoinRoom from './pages/JoinRoom';
 import Room from './pages/Room';
 import DirectMessages from './pages/DirectMessages';
 import Feed from './pages/Feed';
+import OAuthSuccess from './pages/OAuthSuccess';
 
 // Protected Route wrapper — redirects to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -119,6 +120,7 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/oauth-success" element={<OAuthSuccess />} />
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

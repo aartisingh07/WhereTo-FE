@@ -1,37 +1,9 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { toast } from 'react-toastify';
-import { FiMail, FiLock, FiArrowRight, FiEye, FiEyeOff } from 'react-icons/fi';
+import React from 'react';
+import { Link } from 'react-router-dom';
 import { FaGoogle, FaGithub } from 'react-icons/fa';
 import Logo from '../components/layout/Logo';
 
 const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      await login(formData);
-      toast.success('Welcome back! 🎉');
-      navigate('/');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Login failed. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-dark-900 bg-grid flex items-center justify-center px-4 pt-16">
       {/* Background glows */}
@@ -46,111 +18,35 @@ const Login = () => {
             <span className="font-display font-bold text-2xl text-gradient">Where To?</span>
           </Link>
           <h1 className="font-display font-bold text-3xl text-white mb-2">Welcome back</h1>
-          <p className="text-white/40">Log in to your account to continue</p>
+          <p className="text-white/40">Securely sign in using your Google or GitHub account</p>
         </div>
 
-        {/* Form */}
-        <div className="glass-card p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email */}
-            <div>
-              <label htmlFor="login-email" className="block text-sm font-medium text-white/60 mb-2">
-                Email
-              </label>
-              <div className="relative">
-                <FiMail className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={18} />
-                <input
-                  id="login-email"
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="you@example.com"
-                  required
-                  className="input-field !pl-11"
-                />
-              </div>
-            </div>
+        {/* OAuth Buttons Card */}
+        <div className="glass-card p-8 space-y-6">
+          <p className="text-white/50 text-sm text-center leading-relaxed">
+            Choose your preferred sign-in provider to instantly connect with your squad.
+          </p>
 
-            {/* Password */}
-            <div>
-              <label htmlFor="login-password" className="block text-sm font-medium text-white/60 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <FiLock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" size={18} />
-                <input
-                  id="login-password"
-                  type={showPassword ? 'text' : 'password'}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="••••••••"
-                  required
-                  className="input-field !pl-11 !pr-11"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
-                >
-                  {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn-primary w-full flex items-center justify-center gap-2 !py-3.5 text-base"
-            >
-              {isLoading ? (
-                <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              ) : (
-                <>
-                  Log in
-                  <FiArrowRight size={18} />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/5"></div>
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-dark-900 px-3 text-white/30">Or continue with</span>
-            </div>
-          </div>
-
-          {/* Social login buttons */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-3 pt-2">
             <a
               href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}/api/auth/google`}
-              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/5 bg-white/3 hover:bg-white/5 transition-all text-white text-sm font-semibold hover:-translate-y-0.5"
+              className="flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-white text-base font-semibold hover:-translate-y-0.5 shadow-md"
             >
-              <FaGoogle className="text-red-400" size={16} />
-              Google
+              <FaGoogle className="text-red-400" size={20} />
+              Continue with Google
             </a>
             <a
               href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace('/api', '')}/api/auth/github`}
-              className="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/5 bg-white/3 hover:bg-white/5 transition-all text-white text-sm font-semibold hover:-translate-y-0.5"
+              className="flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-white text-base font-semibold hover:-translate-y-0.5 shadow-md"
             >
-              <FaGithub className="text-white" size={16} />
-              GitHub
+              <FaGithub className="text-white" size={20} />
+              Continue with GitHub
             </a>
           </div>
 
-          {/* Signup Link */}
-          <div className="mt-6 text-center">
-            <p className="text-white/30 text-sm">
-              Don't have an account?{' '}
-              <Link to="/register" className="text-primary-400 hover:text-primary-300 font-medium transition-colors">
-                Sign up
-              </Link>
+          <div className="pt-4 text-center border-t border-white/5">
+            <p className="text-white/35 text-xs leading-relaxed">
+              By continuing, you agree to Where To's Terms of Service and Privacy Policy. Traditional email signups are disabled to prevent spam.
             </p>
           </div>
         </div>

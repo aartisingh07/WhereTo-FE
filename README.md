@@ -6,7 +6,7 @@
 
 ## ✨ Features
 
-- 🔐 **JWT Auth integration** — Secure logins and signups with token persistence in sessionStorage and React Router route guards (Protected vs Guest routes).
+- 🔐 **Google & GitHub OAuth Integration** — Passwordless registration and login sessions handled securely via Google & GitHub. Traditional password register/login forms are disabled to prevent fake profile spams.
 - 🧭 **Explore Mode (Solo Place Finder)** — Browser geolocation capturing, mood filter selectors, radius indicator sliders, debounced location search autocomplete suggestions dropdown, visual category gradients for placeholder photos, and Google Maps direction integrations.
 - 👤 **Saved Places & Profile** — Profile page displaying user info, saved venues with Google Maps links, and the **Trip Memories Diary** to upload photo memories publicly or privately.
 - 🏠 **Lobby Join & Create** — Lobbies created with name inputs and copy-to-clipboard buttons, alongside OTP-styled 6-character room code entry boxes.
@@ -17,6 +17,7 @@
 - 📍 **Outing Lounge (midpoint planning)** — Geolocation submissions, submission status rosters, midpoint centroid search aggregations, and results place voting.
 - 💬 **Private Direct Messaging (DM)** — Search for usernames (preventing self-search), send chat requests, approve pending incoming requests, and chat in real-time. Displays a pulsing red notification dot in the Navbar, an Unread Messages Banner on the Home dashboard, real-time DM toaster alerts, and automatic read tracking/synchronization.
 - 📸 **Interactive Community Feed** — Dedicated social feed page displaying public memories from all community members with Instagram-like styling. Features an active members story bar, togglable photo likes with pop micro-animations, and live comment threads.
+- 🎨 **Responsive Dual Theme & Brand Logo** — Sun/Moon live toggle selector shifting components and dashboards between custom navy-dark and slate-light styling variables. Features a custom SVG neon brand logo with zoom and spin hover dynamics in the Navbar.
 
 ---
 

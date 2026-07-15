@@ -7,8 +7,9 @@ import { notificationService } from '../../services/notificationService';
 import { chatService } from '../../services/chatService';
 import { toast } from 'react-toastify';
 import { HiMenu, HiX } from 'react-icons/hi';
-import { FiLogOut, FiUser, FiCompass, FiUsers, FiBell, FiCheck, FiMessageSquare, FiImage, FiHome, FiSun, FiMoon } from 'react-icons/fi';
+import { FiLogOut, FiUser, FiCompass, FiUsers, FiBell, FiCheck, FiMessageSquare, FiImage, FiHome, FiSun, FiMoon, FiMapPin } from 'react-icons/fi';
 import Logo from './Logo';
+import { handleAvatarError } from '../../utils/avatarHelper';
 
 const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
@@ -142,7 +143,10 @@ const Navbar = () => {
   );
 
   if (isAuthenticated) {
-    navLinks.push({ path: '/messages', label: 'Chats', icon: <FiMessageSquare size={18} /> });
+    navLinks.push(
+      { path: '/saved-places', label: 'Saved Places', icon: <FiMapPin size={18} /> },
+      { path: '/messages', label: 'Chats', icon: <FiMessageSquare size={18} /> }
+    );
   }
 
   return (
@@ -269,7 +273,12 @@ const Navbar = () => {
                       }`}
                   >
                     {user?.avatar ? (
-                      <img src={user.avatar} alt="" className="w-6 h-6 rounded-full" />
+                      <img 
+                        src={user.avatar} 
+                        alt="" 
+                        className="w-6 h-6 rounded-full" 
+                        onError={(e) => handleAvatarError(e, user?.username)}
+                      />
                     ) : (
                       <FiUser size={18} />
                     )}
@@ -338,7 +347,12 @@ const Navbar = () => {
                     className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-white/60 hover:text-white hover:bg-white/5 transition-all"
                   >
                     {user?.avatar ? (
-                      <img src={user.avatar} alt="" className="w-6 h-6 rounded-full" />
+                      <img 
+                        src={user.avatar} 
+                        alt="" 
+                        className="w-6 h-6 rounded-full" 
+                        onError={(e) => handleAvatarError(e, user?.username)}
+                      />
                     ) : (
                       <FiUser size={18} />
                     )}

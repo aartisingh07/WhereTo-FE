@@ -68,6 +68,14 @@ export const AuthProvider = ({ children }) => {
     setToken(tokenValue);
   };
 
+  const updateUser = (updatedUserData) => {
+    setUser((prev) => {
+      const merged = prev ? { ...prev, ...updatedUserData } : updatedUserData;
+      sessionStorage.setItem('whereto_user', JSON.stringify(merged));
+      return merged;
+    });
+  };
+
   const value = {
     user,
     token,
@@ -76,6 +84,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     loginWithToken,
+    updateUser,
     isAuthenticated: !!user,
   };
 

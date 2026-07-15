@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { chatService } from '../services/chatService';
 import { toast } from 'react-toastify';
+import { handleAvatarError } from '../utils/avatarHelper';
 import { FiSend, FiUser, FiMessageSquare, FiClock, FiPlusCircle, FiCheck, FiX, FiTrash2, FiEdit2 } from 'react-icons/fi';
 
 const DirectMessages = () => {
@@ -353,7 +354,12 @@ const DirectMessages = () => {
                   <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 flex-shrink-0">
                     <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                       {searchResult.user.avatar ? (
-                        <img src={searchResult.user.avatar} alt="" className="w-full h-full object-cover" />
+                        <img 
+                          src={searchResult.user.avatar} 
+                          alt="" 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => handleAvatarError(e, searchResult.user.username)}
+                        />
                       ) : (
                         <span className="text-white text-[10px] font-bold">{searchResult.user.username[0]?.toUpperCase()}</span>
                       )}
@@ -431,7 +437,12 @@ const DirectMessages = () => {
                       <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 flex-shrink-0">
                         <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                           {req.sender.avatar ? (
-                            <img src={req.sender.avatar} alt="" className="w-full h-full object-cover" />
+                            <img 
+                              src={req.sender.avatar} 
+                              alt="" 
+                              className="w-full h-full object-cover" 
+                              onError={(e) => handleAvatarError(e, req.sender.username)}
+                            />
                           ) : (
                             <span className="text-white text-xs font-bold">{req.sender.username[0]?.toUpperCase()}</span>
                           )}
@@ -492,7 +503,12 @@ const DirectMessages = () => {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 flex-shrink-0">
                       <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                         {chat.user.avatar ? (
-                          <img src={chat.user.avatar} alt="" className="w-full h-full object-cover" />
+                          <img 
+                            src={chat.user.avatar} 
+                            alt="" 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => handleAvatarError(e, chat.user.username)}
+                          />
                         ) : (
                           <span className="text-white font-bold">{chat.user.username[0]?.toUpperCase()}</span>
                         )}
@@ -531,7 +547,12 @@ const DirectMessages = () => {
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 group-hover:scale-105 transition-transform duration-200">
                   <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                     {activeChat.user.avatar ? (
-                      <img src={activeChat.user.avatar} alt="" className="w-full h-full object-cover" />
+                      <img 
+                        src={activeChat.user.avatar} 
+                        alt="" 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => handleAvatarError(e, activeChat.user.username)}
+                      />
                     ) : (
                       <span className="text-white font-bold">{activeChat.user.username[0]?.toUpperCase()}</span>
                     )}

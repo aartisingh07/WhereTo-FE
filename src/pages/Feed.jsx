@@ -8,6 +8,7 @@ import {
   FiMapPin, FiClock, FiPlus, FiArrowRight 
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { handleAvatarError } from '../utils/avatarHelper';
 
 const Feed = () => {
   const { user } = useAuth();
@@ -108,7 +109,12 @@ const Feed = () => {
                 <Link to="/profile" className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 relative">
                   <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                     {user?.avatar ? (
-                      <img src={user.avatar} alt="You" className="w-full h-full object-cover" />
+                      <img 
+                        src={user.avatar} 
+                        alt="You" 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => handleAvatarError(e, user?.username)}
+                      />
                     ) : (
                       <FiUser size={24} className="text-white/40" />
                     )}
@@ -129,7 +135,12 @@ const Feed = () => {
                     <Link to={`/profile/${u._id}`} className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-400 to-accent-500 p-0.5 active:scale-95 transition-transform duration-200">
                       <div className="w-full h-full rounded-full bg-dark-900 border-2 border-dark-900 overflow-hidden">
                         {u.avatar ? (
-                          <img src={u.avatar} alt={u.username} className="w-full h-full object-cover" />
+                          <img 
+                            src={u.avatar} 
+                            alt={u.username} 
+                            className="w-full h-full object-cover" 
+                            onError={(e) => handleAvatarError(e, u.username)}
+                          />
                         ) : (
                           <FiUser size={24} className="text-white/40" />
                         )}
@@ -198,7 +209,12 @@ const Feed = () => {
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 group-hover:scale-105 transition-transform duration-200">
                             <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                               {post.user?.avatar ? (
-                                <img src={post.user.avatar} alt="" className="w-full h-full object-cover" />
+                                <img 
+                                  src={post.user.avatar} 
+                                  alt="" 
+                                  className="w-full h-full object-cover" 
+                                  onError={(e) => handleAvatarError(e, post.user?.username)}
+                                />
                               ) : (
                                 <FiUser size={16} className="text-white/40" />
                               )}
@@ -309,7 +325,12 @@ const Feed = () => {
                 <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5">
                   <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                     {user?.avatar ? (
-                      <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                      <img 
+                        src={user.avatar} 
+                        alt="" 
+                        className="w-full h-full object-cover" 
+                        onError={(e) => handleAvatarError(e, user?.username)}
+                      />
                     ) : (
                       <FiUser size={20} className="text-white/40" />
                     )}

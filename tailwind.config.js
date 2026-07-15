@@ -8,13 +8,13 @@ export default {
   theme: {
     extend: {
       colors: {
-        white: 'rgb(var(--color-text-white-rgb) / <alpha-value>)',
+        // Core dark palette (Navy Blue System)
         dark: {
-          900: 'rgb(var(--color-bg-900-rgb) / <alpha-value>)',
-          800: 'rgb(var(--color-bg-800-rgb) / <alpha-value>)',
-          700: 'rgb(var(--color-bg-700-rgb) / <alpha-value>)',
-          600: 'rgb(var(--color-bg-600-rgb) / <alpha-value>)',
-          500: 'rgb(var(--color-bg-500-rgb) / <alpha-value>)',
+          900: '#050B14',
+          800: '#0A1424',
+          700: '#102038',
+          600: '#1A2F4C',
+          500: '#243E60',
         },
         // Primary — Vibrant Royal Blue
         primary: {

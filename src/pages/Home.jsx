@@ -13,6 +13,7 @@ import { roomService } from '../services/roomService';
 import { chatService } from '../services/chatService';
 import { memoryService } from '../services/memoryService';
 import Logo from '../components/layout/Logo';
+import { handleAvatarError } from '../utils/avatarHelper';
 
 // ─── Logged-OUT landing page ────────────────────────────────────
 const ParticleBackground = () => {
@@ -597,7 +598,12 @@ const UserHome = ({ user }) => {
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5 flex-shrink-0">
               <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                 {user?.avatar
-                  ? <img src={user.avatar} alt="" className="w-full h-full object-cover" />
+                  ? <img 
+                      src={user.avatar} 
+                      alt="" 
+                      className="w-full h-full object-cover" 
+                      onError={(e) => handleAvatarError(e, user?.username)}
+                    />
                   : <FiUser size={24} className="text-white/40" />}
               </div>
             </div>

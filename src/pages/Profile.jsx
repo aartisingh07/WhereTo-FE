@@ -7,12 +7,13 @@ import { memoryService } from '../services/memoryService';
 import { chatService } from '../services/chatService';
 import { 
   FiUser, FiCalendar, FiMapPin, FiLogOut, FiTrash2, FiNavigation, 
-  FiCamera, FiGlobe, FiLock, FiUsers, FiImage, FiPlus, FiArrowLeft
+  FiCamera, FiGlobe, FiLock, FiUsers, FiImage, FiPlus, FiArrowLeft, FiX
 } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { handleAvatarError } from '../utils/avatarHelper';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
   const { userId } = useParams();
   
@@ -27,6 +28,65 @@ const Profile = () => {
   // Memories State
   const [memories, setMemories] = useState([]);
   const [loadingMemories, setLoadingMemories] = useState(true);
+
+  // Edit Profile States
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({ name: '', username: '', bio: '' });
+  const [editPhoto, setEditPhoto] = useState(null);
+  const [editPhotoPreview, setEditPhotoPreview] = useState('');
+  const [savingProfile, setSavingProfile] = useState(false);
+
+  useEffect(() => {
+    if (isEditModalOpen && profileUser) {
+      setEditForm({
+        name: profileUser.name || '',
+        username: profileUser.username || '',
+        bio: profileUser.bio || ''
+      });
+      setEditPhoto(null);
+      setEditPhotoPreview(profileUser.avatar || '');
+    }
+  }, [isEditModalOpen, profileUser]);
+
+  const getUsernameLockStatus = () => {
+    if (!profileUser?.lastUsernameChange) return { locked: false };
+    const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+    const elapsed = Date.now() - new Date(profileUser.lastUsernameChange).getTime();
+    if (elapsed < thirtyDaysMs) {
+      const nextDate = new Date(new Date(profileUser.lastUsernameChange).getTime() + thirtyDaysMs);
+      const daysLeft = Math.ceil((thirtyDaysMs - elapsed) / (24 * 60 * 60 * 1000));
+      return { locked: true, daysLeft, nextDate: nextDate.toLocaleDateString() };
+    }
+    return { locked: false };
+  };
+
+  const lockStatus = getUsernameLockStatus();
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    setSavingProfile(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('name', editForm.name);
+      formData.append('username', editForm.username);
+      formData.append('bio', editForm.bio);
+      if (editPhoto) {
+        formData.append('photo', editPhoto);
+      }
+
+      const updatedUser = await authService.updateProfile(formData);
+      updateUser(updatedUser);
+      setProfileUser(updatedUser);
+      toast.success('Profile updated successfully! 🎉');
+      setIsEditModalOpen(false);
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to update profile');
+    } finally {
+      setSavingProfile(false);
+    }
+  };
 
   // Upload State
   const [newPhoto, setNewPhoto] = useState(null);
@@ -231,15 +291,37 @@ const Profile = () => {
                 <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5">
                   <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
                     {profileUser.avatar
-                      ? <img src={profileUser.avatar} alt={profileUser.username} className="w-full h-full object-cover" />
+                      ? <img 
+                          src={profileUser.avatar} 
+                          alt={profileUser.username} 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => handleAvatarError(e, profileUser.username)}
+                        />
                       : <FiUser size={40} className="text-white/40" />}
                   </div>
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-neon-green rounded-full border-2 border-dark-800" />
               </div>
-              <h1 className="font-display font-bold text-xl text-white mb-1">{profileUser.username}</h1>
+              {profileUser.name ? (
+                <>
+                  <h1 className="font-display font-bold text-xl text-white mb-0.5">{profileUser.name}</h1>
+                  <p className="text-sm text-white/50 mb-2">@{profileUser.username}</p>
+                </>
+              ) : (
+                <h1 className="font-display font-bold text-xl text-white mb-2">@{profileUser.username}</h1>
+              )}
+
               {isOwnProfile ? (
-                <p className="text-white/40 text-xs truncate">{profileUser.email}</p>
+                <>
+                  <p className="text-white/40 text-xs truncate mb-3">{profileUser.email}</p>
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="w-full py-2 px-4 rounded-xl border border-primary-500/20 bg-primary-500/10 hover:bg-primary-500/25 text-primary-300 font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer mb-2"
+                  >
+                    <FiUser size={14} />
+                    Edit Profile
+                  </button>
+                </>
               ) : (
                 relationship?.status === 'accepted' && (
                   <button
@@ -250,6 +332,13 @@ const Profile = () => {
                     Remove from Chats
                   </button>
                 )
+              )}
+
+              {profileUser.bio && (
+                <div className="mt-4 pt-4 border-t border-white/5 text-left">
+                  <p className="text-[10px] font-semibold text-white/40 mb-1 uppercase tracking-wider">About Me</p>
+                  <p className="text-xs text-white/70 leading-relaxed whitespace-pre-wrap">{profileUser.bio}</p>
+                </div>
               )}
             </div>
 
@@ -271,81 +360,33 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Saved Places (Only for own profile) */}
+            {/* Account Actions (Only for own profile) */}
             {isOwnProfile && (
               <div className="glass-card p-5 animate-slide-up" style={{ animationDelay: '0.2s' }}>
                 <h2 className="font-display font-semibold text-sm text-white mb-4 flex items-center gap-2">
-                  <FiMapPin className="text-accent-400" size={16} />
-                  Saved Places
+                  <FiLock className="text-primary-400" size={16} />
+                  Account Actions
                 </h2>
-
-                {loadingPlaces ? (
-                  <div className="space-y-2.5">
-                    {[1, 2].map((i) => (
-                      <div key={i} className="h-12 skeleton rounded-xl animate-pulse" />
-                    ))}
-                  </div>
-                ) : savedPlaces.length === 0 ? (
-                  <div className="text-center py-6">
-                    <FiMapPin className="text-white/20 mx-auto mb-2" size={24} />
-                    <p className="text-white/30 text-xs mb-3">No saved places yet</p>
-                    <button onClick={() => navigate('/explore')} className="btn-primary text-[10px] !px-3 !py-1.5 cursor-pointer">
-                      Explore places
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
-                    {savedPlaces.map((place) => (
-                      <div key={place._id} className="flex items-center gap-2.5 p-2 rounded-xl bg-white/3 border border-white/5 hover:bg-white/5 transition-all group">
-                        <div className="w-8 h-8 rounded-lg bg-primary-500/10 flex items-center justify-center flex-shrink-0">
-                          <FiMapPin className="text-primary-400" size={14} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium text-xs truncate">{place.name}</p>
-                          <p className="text-white/30 text-[10px]">{place.category}</p>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-7 h-7 rounded-lg bg-primary-500/10 flex items-center justify-center text-primary-400 hover:bg-primary-500/20 transition-colors"
-                          >
-                            <FiNavigation size={12} />
-                          </a>
-                          <button
-                            onClick={() => handleDeletePlace(place._id)}
-                            className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center text-red-400 hover:bg-red-500/20 transition-colors cursor-pointer"
-                          >
-                            <FiTrash2 size={12} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="space-y-3">
+                  <button
+                    onClick={handleLogout}
+                    className="w-full py-2.5 px-4 rounded-xl border border-white/5 bg-white/5 hover:bg-white/10 hover:border-white/10 text-white/60 hover:text-white font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <FiLogOut size={14} />
+                    Log out
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className="w-full py-2.5 px-4 rounded-xl border border-red-500/10 bg-red-500/5 hover:bg-red-500/10 hover:border-red-500/20 text-red-400 hover:text-red-300 font-semibold text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <FiTrash2 size={14} />
+                    Delete Account
+                  </button>
+                </div>
               </div>
             )}
 
-            {/* Actions (Logout & Delete Account) (Only for own profile) */}
-            {isOwnProfile && (
-              <div className="flex flex-col gap-2.5 pt-2 animate-slide-up">
-                <button
-                  onClick={handleLogout}
-                  className="inline-flex items-center justify-center gap-2 text-white/40 hover:text-white py-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all text-xs font-semibold w-full cursor-pointer"
-                >
-                  <FiLogOut size={14} />
-                  Log out
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(true)}
-                  className="inline-flex items-center justify-center gap-2 text-red-400 hover:text-red-300 py-2.5 rounded-xl bg-red-500/5 border border-red-500/10 hover:bg-red-500/10 hover:border-red-500/20 transition-all text-xs font-semibold w-full cursor-pointer"
-                >
-                  <FiTrash2 size={14} />
-                  Delete Account
-                </button>
-              </div>
-            )}
+
 
           </div>
 
@@ -503,6 +544,144 @@ const Profile = () => {
                 {deleting ? 'Deleting...' : 'Yes, Delete My Account'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PROFILE MODAL */}
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-950/80 backdrop-blur-md">
+          <div className="glass-card w-full max-w-md p-6 animate-scale-in relative border border-white/10 shadow-2xl bg-dark-900 text-left">
+            <div className="flex items-center justify-between pb-4 border-b border-white/5 mb-6">
+              <h3 className="font-display font-bold text-lg text-white">Edit Profile</h3>
+              <button 
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-white/40 hover:text-white transition-colors cursor-pointer p-1"
+              >
+                <FiX size={20} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-5">
+              {/* Photo Selector */}
+              <div className="flex flex-col items-center gap-3">
+                <div 
+                  className="relative group cursor-pointer" 
+                  onClick={() => document.getElementById('avatar-upload-input').click()}
+                >
+                  <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 p-0.5">
+                    <div className="w-full h-full rounded-full bg-dark-800 flex items-center justify-center overflow-hidden">
+                      {editPhotoPreview ? (
+                        <img 
+                          src={editPhotoPreview} 
+                          alt="Preview" 
+                          className="w-full h-full object-cover" 
+                          onError={(e) => handleAvatarError(e, editForm.username)}
+                        />
+                      ) : (
+                        <FiUser size={32} className="text-white/40" />
+                      )}
+                    </div>
+                  </div>
+                  <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <FiCamera size={18} className="text-white" />
+                  </div>
+                </div>
+                <span className="text-[10px] text-white/40">Click photo to upload new image</span>
+                <input
+                  id="avatar-upload-input"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                      setEditPhoto(file);
+                      setEditPhotoPreview(URL.createObjectURL(file));
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Name */}
+              <div>
+                <label className="block text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editForm.name}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="Enter your name"
+                  className="input-field"
+                />
+              </div>
+
+              {/* Username */}
+              <div>
+                <label className="block text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider">
+                  Username
+                </label>
+                <input
+                  type="text"
+                  required
+                  disabled={lockStatus.locked}
+                  value={editForm.username}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, username: e.target.value.replace(/[^a-zA-Z0-9._]/g, '') }))}
+                  placeholder="username"
+                  className={`input-field ${lockStatus.locked ? 'opacity-50 cursor-not-allowed' : ''}`}
+                />
+                {lockStatus.locked ? (
+                  <p className="text-[10px] text-yellow-400 mt-2 leading-relaxed">
+                    ⚠️ Username locked. You can change it again in {lockStatus.daysLeft} days (on {lockStatus.nextDate}).
+                  </p>
+                ) : (
+                  <p className="text-[9px] text-white/30 mt-2 leading-relaxed">
+                    Note: You can only change your username once a month. Letters, numbers, periods (.), and underscores (_) allowed.
+                  </p>
+                )}
+              </div>
+
+              {/* About Me */}
+              <div>
+                <label className="block text-xs font-semibold text-white/50 mb-2 uppercase tracking-wider flex justify-between">
+                  <span>About Me</span>
+                  <span className={`${editForm.bio.trim().split(/\s+/).filter(Boolean).length > 300 ? 'text-red-400 font-bold' : 'text-white/30'}`}>
+                    {editForm.bio.trim().split(/\s+/).filter(Boolean).length} / 300 words
+                  </span>
+                </label>
+                <textarea
+                  value={editForm.bio}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                  placeholder="Tell others about yourself, your favorite travel styles, vibes, etc..."
+                  rows={3}
+                  className="input-field py-2 resize-none text-xs"
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t border-white/5 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setIsEditModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-xl border border-white/10 hover:bg-white/5 text-white/70 hover:text-white font-semibold text-sm transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingProfile}
+                  className="flex-1 btn-primary py-2.5 flex items-center justify-center gap-2 text-sm"
+                >
+                  {savingProfile ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    'Save Changes'
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

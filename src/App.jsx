@@ -12,6 +12,7 @@ import Room from './pages/Room';
 import DirectMessages from './pages/DirectMessages';
 import Feed from './pages/Feed';
 import OAuthSuccess from './pages/OAuthSuccess';
+import SavedPlaces from './pages/SavedPlaces';
 
 // Protected Route wrapper — redirects to login if not authenticated
 const ProtectedRoute = ({ children }) => {
@@ -117,6 +118,14 @@ function App() {
           element={
             <ProtectedRoute>
               <DirectMessages />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/saved-places"
+          element={
+            <ProtectedRoute>
+              <SavedPlaces />
             </ProtectedRoute>
           }
         />

@@ -159,6 +159,30 @@ const Room = () => {
     }
   };
 
+  const handleRespondRequest = async (requestId, action) => {
+    try {
+      const response = await roomService.respondJoinRequest(id, requestId, action);
+      setRoom(response.room);
+      toast.success(`Request ${action}ed successfully`);
+    } catch (err) {
+      console.error('Failed to respond to request:', err);
+      toast.error('Could not process join request');
+    }
+  };
+
+  const handleRemoveMember = async (memberId) => {
+    if (!window.confirm("Are you sure you want to remove this person from the room?")) return;
+    try {
+      const response = await roomService.removeMember(id, memberId);
+      setRoom(response.room);
+      socket?.emit('kick-user', { roomId: id, userId: memberId });
+      toast.success("Member removed successfully");
+    } catch (err) {
+      console.error('Failed to remove member:', err);
+      toast.error(err.response?.data?.message || 'Could not remove member');
+    }
+  };
+
   // Load room data
   useEffect(() => {
     const load = async () => {
@@ -203,6 +227,16 @@ const Room = () => {
 
     socket.on('room-users-update', (users) => {
       setOnlineUsers(users);
+    });
+
+    socket.on('user-kicked', ({ userId }) => {
+      if (userId === user?._id) {
+        socket.emit('leave-room', { roomId: id });
+        toast.info('You have been removed from this room by the host.');
+        navigate('/join-room');
+      } else {
+        roomService.getRoom(id).then(setRoom).catch(console.error);
+      }
     });
 
     socket.on('activity-changed', ({ activity: newActivity }) => {
@@ -542,25 +576,67 @@ const Room = () => {
               const isOnline = onlineUsers.some((u) => u.userId === memberId);
               const isRoomHost = memberId === (room?.host?._id || room?.host);
               return (
-                <Link
-                  key={memberId}
-                  to={`/profile/${memberId}`}
-                  className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-white/3 transition-colors cursor-pointer"
-                >
-                  <div className="relative flex-shrink-0">
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-xs font-bold text-white">
-                      {memberUsername[0]?.toUpperCase()}
+                <div key={memberId} className="flex items-center justify-between gap-1 group/member">
+                  <Link
+                    to={`/profile/${memberId}`}
+                    className="flex-1 flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/3 transition-colors cursor-pointer min-w-0"
+                  >
+                    <div className="relative flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-xs font-bold text-white">
+                        {memberUsername[0]?.toUpperCase()}
+                      </div>
+                      <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-dark-900 ${isOnline ? 'bg-neon-green' : 'bg-white/20'}`} />
                     </div>
-                    <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border border-dark-900 ${isOnline ? 'bg-neon-green' : 'bg-white/20'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-xs font-medium truncate">{memberUsername}</p>
-                    {isRoomHost && <p className="text-primary-400 text-[10px]">Host</p>}
-                  </div>
-                </Link>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-white text-xs font-medium truncate">{memberUsername}</p>
+                      {isRoomHost && <p className="text-primary-400 text-[10px]">Host</p>}
+                    </div>
+                  </Link>
+
+                  {isHost && !isRoomHost && (
+                    <button
+                      onClick={() => handleRemoveMember(memberId)}
+                      className="opacity-0 group-hover/member:opacity-100 p-1 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all cursor-pointer flex-shrink-0 mr-1"
+                      title="Remove member"
+                    >
+                      <FiX size={14} />
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
+
+          {/* Join Requests (Host only) */}
+          {isHost && room?.joinRequests && room.joinRequests.filter(r => r.status === 'pending').length > 0 && (
+            <div className="p-3 border-t border-white/5 bg-white/2 flex-shrink-0">
+              <p className="text-white/30 text-[10px] uppercase tracking-widest font-semibold mb-2.5">
+                Join Requests ({room.joinRequests.filter(r => r.status === 'pending').length})
+              </p>
+              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                {room.joinRequests.filter(r => r.status === 'pending').map((req) => (
+                  <div key={req._id} className="p-2 rounded-lg bg-dark-900 border border-white/5 text-[11px] text-left">
+                    <p className="font-semibold text-white truncate">{req.user?.name || req.user?.username || 'User'}</p>
+                    {req.note && <p className="text-white/40 text-[10px] italic mt-1 leading-normal whitespace-pre-wrap">"{req.note}"</p>}
+                    <div className="flex gap-1.5 mt-2">
+                      <button
+                        onClick={() => handleRespondRequest(req._id, 'accept')}
+                        className="flex-1 py-1 rounded bg-neon-green/20 text-neon-green hover:bg-neon-green/30 transition-colors font-medium text-[10px] cursor-pointer"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        onClick={() => handleRespondRequest(req._id, 'reject')}
+                        className="flex-1 py-1 rounded bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-colors font-medium text-[10px] cursor-pointer"
+                      >
+                        Decline
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex-1 flex flex-col min-w-0">

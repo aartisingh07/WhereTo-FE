@@ -40,4 +40,24 @@ export const roomService = {
     const response = await api.get('/rooms/my-rooms');
     return response.data;
   },
+
+  getActiveRooms: async () => {
+    const response = await api.get('/rooms/active');
+    return response.data;
+  },
+
+  requestJoinRoom: async (id, note) => {
+    const response = await api.post(`/rooms/${id}/request-join`, { note });
+    return response.data;
+  },
+
+  respondJoinRequest: async (id, requestId, action) => {
+    const response = await api.post(`/rooms/${id}/respond-request`, { requestId, action });
+    return response.data;
+  },
+
+  removeMember: async (id, memberId) => {
+    const response = await api.post(`/rooms/${id}/remove-member`, { memberId });
+    return response.data;
+  },
 };

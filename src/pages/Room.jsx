@@ -149,9 +149,10 @@ const Room = () => {
   };
 
   const handleDeleteRoom = async () => {
-    if (!window.confirm("Are you sure you want to delete this room? This will kick everyone out and deactivate the room.")) return;
+    if (!window.confirm("Are you sure you want to delete this room? This will kick everyone out and delete all room data.")) return;
     try {
       await roomService.deleteRoom(id);
+      socket?.emit('delete-room', { roomId: id });
       toast.success("Room deleted successfully");
       navigate('/');
     } catch (err) {
@@ -237,6 +238,11 @@ const Room = () => {
       } else {
         roomService.getRoom(id).then(setRoom).catch(console.error);
       }
+    });
+
+    socket.on('room-deleted', () => {
+      toast.info('This room has been deleted by the host.');
+      navigate('/');
     });
 
     socket.on('activity-changed', ({ activity: newActivity }) => {

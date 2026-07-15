@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { FiSend, FiLogOut, FiHash, FiUsers, FiMessageCircle, FiExternalLink, FiClock, FiTrash2, FiEdit2, FiUserPlus, FiCheck } from 'react-icons/fi';
+import { FiSend, FiLogOut, FiHash, FiUsers, FiMessageCircle, FiExternalLink, FiClock, FiTrash2, FiEdit2, FiUserPlus, FiCheck, FiX } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';

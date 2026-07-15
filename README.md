@@ -1,15 +1,16 @@
 # 🗺️ Where To? — Frontend
 
-> React + Vite client for the **Where To?** platform — a real-time collaborative platform where users can explore nearby places solo or connect in group lobbies to chat, vote on games, discover movies, and sync Pomodoro study timers.
-
----
-
-## ✨ Features
+> React + Vite client for the **Where To?** platform — a real-time collaborative platform where users can explore nearby places solo or connect in group lobbies to chat, vote on games, discover movies, and sync Pomodoro study timers## ✨ Features
 
 - 🔐 **Google & GitHub OAuth Integration** — Passwordless registration and login sessions handled securely via Google & GitHub. Traditional password register/login forms are disabled to prevent fake profile spams.
 - 🧭 **Explore Mode (Solo Place Finder)** — Browser geolocation capturing, mood filter selectors, radius indicator sliders, debounced location search autocomplete suggestions dropdown, visual category gradients for placeholder photos, and Google Maps direction integrations.
-- 👤 **Saved Places & Profile** — Profile page displaying user info, saved venues with Google Maps links, and the **Trip Memories Diary** to upload photo memories publicly or privately.
-- 🏠 **Lobby Join & Create** — Lobbies created with name inputs and copy-to-clipboard buttons, alongside OTP-styled 6-character room code entry boxes.
+- 👤 **Saved Places Dashboard** — Dedicated, full-screen, responsive Saved Places dashboard accessible from the navbar, rendering all user-bookmarked locations with coordinate badges, direction planners, and deletion triggers.
+- 👤 **Profile Card & Account Actions** — Profile page displaying user info, public/private memories diary, and a clean **Account Actions** panel with Log out and Delete Account buttons grouped together.
+- ✍️ **Profile Editing & Customizations** — Inline profile editor to update display name, avatar photo, bio description (supports emojis, lines, up to 300 words max with word counter), and custom username handle (Instagram format validation, restricted to one change per month with dynamic banner cooldown count).
+- 🎲 **DiceBear Client Fallbacks** — Automatic silhouette fallback helper mapping username strings to unique DiceBear SVG avatars if Google/GitHub profile photos fail to load.
+- 🏠 **Lobby Join & Lobbies Directory** — Tabbed page layout offering two ways to join: entering a 6-character room code, or browsing public active lobbies. Allows users to submit join requests containing a custom note explaining why they want to tag along.
+- 🤝 **Host Request Manager Sidebar** — Real-time panel in the lobby sidebar allowing hosts to view pending join requests, inspect custom notes, and accept or decline users.
+- ⚡ **Real-Time Kicks & Room Deletions** — Hosts can hover over any sidebar member to instantly kick them out. Kicked users are automatically disconnected and redirected to `/join-room` with toast warnings. Host room deletions hard-purge messages and instantly redirect all online members to `/`.
 - 💬 **Socket Chat & Presence** — Sidebar tracking active room members, host tags, online indicators, and group text chat with system join/leave notices.
 - 🎮 **Game Lounge & Live Voting** — Lists of browser games with live voting panels (yes, no, maybe progress bars and host early end overrides).
 - 🎬 **Watch Lounge (TMDB & Streaming providers)** — Filter filters (moods, genres, languages), movie list summaries, movie proposals, and custom victory cards calling API to display logo shortcuts of streaming providers (Netflix, Prime Video, Disney+).
@@ -51,30 +52,34 @@ frontend/
 │   │   └── places/           # PlaceCard list items
 │   ├── context/
 │   │   ├── AuthContext.jsx   # User authentication provider
-│   │   └── SocketContext.jsx # Socket.io-client provider
+│   │   ├── SocketContext.jsx # Socket.io-client provider
+│   │   └── ThemeContext.jsx  # Sun/Moon light-dark context provider
 │   ├── hooks/
 │   │   └── useGeolocation.js # Navigator geolocation hook
 │   ├── pages/
 │   │   ├── Home.jsx          # Mode selector landing page & user dashboard
 │   │   ├── Login.jsx         # Login form
-│   │   ├── Register.jsx      # Registration form
+             ├── Register.jsx      # Registration form
 │   │   ├── Explore.jsx       # Solo place finder explorer
 │   │   ├── CreateRoom.jsx    # Room creator & code copy
-│   │   ├── JoinRoom.jsx      # OTP room code input
-│   │   ├── Profile.jsx       # User details, saved places, & memories diary
+│   │   ├── JoinRoom.jsx      # Tabbed join code & public active lobbies directory
+│   │   ├── Profile.jsx       # User details, About Me bio, actions & memories diary
+│   │   ├── SavedPlaces.jsx   # Dedicated user saved places panel
 │   │   ├── Feed.jsx          # Instagram-style community trip feed page
-│   │   ├── Room.jsx          # Synced collaborative room panels
+│   │   ├── Room.jsx          # Synced collaborative room panels, kicks, & request managers
 │   │   └── DirectMessages.jsx # Unified DM sidebar search & chat workspace
 │   ├── services/
 │   │   ├── api.js            # Axios request configurations
-│   │   ├── authService.js    # Register/Login requests
+│   │   ├── authService.js    # Register/Login/Profile updates
 │   │   ├── placeService.js   # Save/Load place requests
-│   │   ├── roomService.js    # Create/Join/Get room endpoints
+│   │   ├── roomService.js    # Create/Join/Get/Request/Kick room endpoints
 │   │   ├── memoryService.js  # Upload/Fetch memories and feed
 │   │   └── chatService.js    # Search, request actions, and DM requests
+│   ├── utils/
+│   │   ├── avatarHelper.js   # Client-side broken image DiceBear fallback resolver
 │   ├── App.jsx               # Protected/Guest Route routing wraps
 │   ├── main.jsx              # React mounting root
-│   └── index.css             # Component style layers & animations
+│   └── index.css             # Component style layers, dark mode overrides & animations
 ├── index.html
 ├── tailwind.config.js
 └── vite.config.js

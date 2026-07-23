@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FiHash, FiArrowRight, FiCompass, FiLock, FiUsers, FiMessageSquare, FiSend, FiX, FiCheck } from 'react-icons/fi';
+import { FiHash, FiArrowRight, FiCompass, FiLock, FiUsers, FiMessageSquare, FiSend, FiX, FiCheck, FiSearch } from 'react-icons/fi';
 import { toast } from 'react-toastify';
 import { roomService } from '../services/roomService';
 
@@ -20,6 +20,7 @@ const JoinRoom = () => {
   // Public Lobbies States
   const [publicRooms, setPublicRooms] = useState([]);
   const [loadingPublic, setLoadingPublic] = useState(true);
+  const [publicSearchQuery, setPublicSearchQuery] = useState('');
   const [submittingRequest, setSubmittingRequest] = useState(false);
   
   // Note Overlay States
@@ -222,9 +223,31 @@ const JoinRoom = () => {
           {/* TAB 2: Public Lobbies */}
           {activeTab === 'public' && (
             <div className="animate-fade-in space-y-4">
-              <p className="text-white/40 text-xs mb-4 text-center">
+              <p className="text-white/40 text-xs text-center">
                 Explore active lobbies and request to join hosts directly
               </p>
+
+              {/* Search Bar */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/30">
+                  <FiSearch size={14} />
+                </div>
+                <input
+                  type="text"
+                  value={publicSearchQuery}
+                  onChange={(e) => setPublicSearchQuery(e.target.value)}
+                  placeholder="Search lobbies by room name or host..."
+                  className="input-field pl-9 pr-8 py-2.5 text-xs"
+                />
+                {publicSearchQuery && (
+                  <button
+                    onClick={() => setPublicSearchQuery('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-white/30 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <FiX size={14} />
+                  </button>
+                )}
+              </div>
 
               {loadingPublic ? (
                 <div className="space-y-3">
@@ -237,64 +260,90 @@ const JoinRoom = () => {
                   <FiCompass className="text-white/20 mx-auto mb-2 animate-bounce" size={28} />
                   <p className="text-white/30 text-xs">No other active public lobbies found right now</p>
                 </div>
-              ) : (
-                <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
-                  {publicRooms.map((room) => {
-                    const hostName = room.host?.name || room.host?.username || 'Unknown Host';
-                    
-                    // Locate current user's request status
-                    const myRequest = room.joinRequests?.find(
-                      (r) => (r.user?._id || r.user) === user?._id
-                    );
+              ) : (() => {
+                const filtered = publicRooms.filter((room) => {
+                  if (!publicSearchQuery.trim()) return true;
+                  const q = publicSearchQuery.toLowerCase().trim();
+                  const roomNameMatch = room.name?.toLowerCase().includes(q);
+                  const hostName = (room.host?.name || room.host?.username || '').toLowerCase();
+                  const hostMatch = hostName.includes(q);
+                  return roomNameMatch || hostMatch;
+                });
 
-                    return (
-                      <div 
-                        key={room._id}
-                        className="bg-white/3 border border-white/5 p-4 rounded-xl flex items-center justify-between gap-4 transition-all hover:bg-white/5 hover:border-white/10"
+                if (filtered.length === 0) {
+                  return (
+                    <div className="text-center py-8">
+                      <FiSearch className="text-white/20 mx-auto mb-2" size={24} />
+                      <p className="text-white/40 text-xs mb-2">No lobbies match "{publicSearchQuery}"</p>
+                      <button
+                        onClick={() => setPublicSearchQuery('')}
+                        className="text-primary-400 hover:text-primary-300 text-xs font-semibold hover:underline cursor-pointer"
                       >
-                        <div className="min-w-0 flex-1">
-                          <h4 className="font-display font-semibold text-white text-sm truncate">{room.name}</h4>
-                          <p className="text-[10px] text-white/30 mt-1 truncate">
-                            Host: <span className="font-medium text-white/50">{hostName}</span>
-                          </p>
-                        </div>
+                        Clear search filter
+                      </button>
+                    </div>
+                  );
+                }
 
-                        <div className="flex-shrink-0">
-                          {myRequest ? (
-                            myRequest.status === 'accepted' ? (
-                              <button
-                                onClick={() => navigate(`/room/${room._id}`)}
-                                className="px-3 py-1.5 rounded-lg bg-neon-green/20 text-neon-green hover:bg-neon-green/30 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
-                              >
-                                <FiCheck size={13} />
-                                Join Room
-                              </button>
-                            ) : myRequest.status === 'pending' ? (
-                              <span className="inline-block px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/40 text-xs font-semibold cursor-not-allowed">
-                                Pending Approval
-                              </span>
+                return (
+                  <div className="space-y-3 max-h-72 overflow-y-auto pr-1">
+                    {filtered.map((room) => {
+                      const hostName = room.host?.name || room.host?.username || 'Unknown Host';
+                      
+                      // Locate current user's request status
+                      const myRequest = room.joinRequests?.find(
+                        (r) => (r.user?._id || r.user) === user?._id
+                      );
+
+                      return (
+                        <div 
+                          key={room._id}
+                          className="bg-white/3 border border-white/5 p-4 rounded-xl flex items-center justify-between gap-4 transition-all hover:bg-white/5 hover:border-white/10"
+                        >
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-display font-semibold text-white text-sm truncate">{room.name}</h4>
+                            <p className="text-[10px] text-white/30 mt-1 truncate">
+                              Host: <span className="font-medium text-white/50">{hostName}</span>
+                            </p>
+                          </div>
+
+                          <div className="flex-shrink-0">
+                            {myRequest ? (
+                              myRequest.status === 'accepted' ? (
+                                <button
+                                  onClick={() => navigate(`/room/${room._id}`)}
+                                  className="px-3 py-1.5 rounded-lg bg-neon-green/20 text-neon-green hover:bg-neon-green/30 text-xs font-bold flex items-center gap-1 cursor-pointer transition-colors"
+                                >
+                                  <FiCheck size={13} />
+                                  Join Room
+                                </button>
+                              ) : myRequest.status === 'pending' ? (
+                                <span className="inline-block px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white/40 text-xs font-semibold cursor-not-allowed">
+                                  Pending Approval
+                                </span>
+                              ) : (
+                                <span className="inline-block px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold cursor-not-allowed">
+                                  Request Declined
+                                </span>
+                              )
                             ) : (
-                              <span className="inline-block px-3 py-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold cursor-not-allowed">
-                                Request Declined
-                              </span>
-                            )
-                          ) : (
-                            <button
-                              onClick={() => {
-                                setRequestRoomId(room._id);
-                                setRequestNote('');
-                              }}
-                              className="btn-primary !px-3.5 !py-1.5 text-xs flex items-center gap-1 cursor-pointer"
-                            >
-                              Request
-                            </button>
-                          )}
+                              <button
+                                onClick={() => {
+                                  setRequestRoomId(room._id);
+                                  setRequestNote('');
+                                }}
+                                className="btn-primary !px-3.5 !py-1.5 text-xs flex items-center gap-1 cursor-pointer"
+                              >
+                                Request
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           )}
 

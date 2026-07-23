@@ -280,7 +280,7 @@ const Register = () => {
           {/* Visual Divider */}
           <div className="relative flex items-center justify-center my-6">
             <div className="absolute w-full border-t border-white/5" />
-            <span className="relative px-3 bg-[#0d1527] text-white/30 text-xs font-medium uppercase tracking-wider">
+            <span className="relative px-3 bg-dark-900 text-white/30 text-xs font-medium uppercase tracking-wider">
               or sign up with
             </span>
           </div>
